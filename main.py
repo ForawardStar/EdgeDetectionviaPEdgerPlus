@@ -8,6 +8,8 @@ from datasets import *
 from loss_function import MyLoss
 from models import *
 from models_noshare import Guider_noshare
+from models_bayesian import *
+from models_noshare_bayesian import Guider_noshare_bayesian
 from tools import SingleSummaryWriter, mutils, saver
 from tools.metric_utils import AverageMeters, write_loss
 from utils import *
@@ -34,6 +36,14 @@ parser.add_argument('--saved_path', type=str, default='logs/')
 # ----------
 def main():
     global global_step
+    global W1_previous
+    global W2_previous
+    global W3_previous
+
+    global W1_noshare_previous
+    global W2_noshare_previous
+    global W3_noshare_previous
+
 
     for epoch in range(args.epoch, args.n_epochs):
         if epoch >= 2:
@@ -48,10 +58,115 @@ def main():
             for k, v in state_t_noshare.items():
                 state_t_noshare[k] = (state_t_noshare[k] + state_st_noshare[k]) * 0.5
             G_network_teacher_noshare.load_state_dict(state_t_noshare)
+
         elif epoch == 1:
             G_network_teacher.load_state_dict(G_network.state_dict())
 
             G_network_teacher_noshare.load_state_dict(G_network_noshare.state_dict())
+
+        if epoch >= 1:
+            # Update the parameters of Bayesian Networks
+            state_t = G_network_teacher.state_dict()
+
+            state_b1 = G_network_bayesian1.state_dict()
+            for k, v in state_t.items():
+                state_b1[k] = state_t[k]
+            G_network_bayesian1.load_state_dict(state_b1)
+
+            state_b2 = G_network_bayesian2.state_dict()
+            for k, v in state_t.items():
+                state_b2[k] = state_t[k]
+            G_network_bayesian2.load_state_dict(state_b2)
+
+            state_b3 = G_network_bayesian3.state_dict()
+            for k, v in state_t.items():
+                state_b3[k] = state_t[k]
+            G_network_bayesian3.load_state_dict(state_b3)
+
+            ##################################################################333
+            state_t_noshare = G_network_teacher_noshare.state_dict()
+
+            state_b1_noshare = G_network_noshare_bayesian1.state_dict()
+            for k, v in state_t_noshare.items():
+                state_b1_noshare[k] = state_t_noshare[k]
+            G_network_noshare_bayesian1.load_state_dict(state_b1_noshare)
+
+            state_b2_noshare = G_network_noshare_bayesian2.state_dict()
+            for k, v in state_t_noshare.items():
+                state_b2_noshare[k] = state_t_noshare[k]
+            G_network_noshare_bayesian2.load_state_dict(state_b2_noshare)
+
+            state_b3_noshare = G_network_noshare_bayesian3.state_dict()
+            for k, v in state_t_noshare.items():
+                state_b3_noshare[k] = state_t_noshare[k]
+            G_network_noshare_bayesian3.load_state_dict(state_b3_noshare)
+      
+           
+            print("Finish sampling parameters")
+            # Computing weights of every parameter samplings 
+            bar_val = tqdm.tqdm(val_dataloader, disable=True)
+            val_length = len(bar_val)
+            constants = 0.0
+            predictions1 = 0.0
+            predictions2 = 0.0
+            predictions3 = 0.0
+            predictions_noshare1 = 0.0
+            predictions_noshare2 = 0.0
+            predictions_noshare3 = 0.0
+            for i, val_batch in enumerate(bar_val):
+                val_img = val_batch['img'].float().to(device)
+                val_edge_gt = val_batch['edge'].float().to(device)
+
+                M = W1_previous * torch.sigmoid(G_network_bayesian1(val_img)[-1]) + W2_previous * torch.sigmoid(G_network_bayesian2(val_img)[-1]) + W3_previous * torch.sigmoid(G_network_bayesian3(val_img)[-1])
+                M_noshare = W1_noshare_previous * torch.sigmoid(G_network_noshare_bayesian1(val_img)[-1]) + W2_noshare_previous * torch.sigmoid(G_network_noshare_bayesian2(val_img)[-1]) + W3_noshare_previous * torch.sigmoid(G_network_noshare_bayesian3(val_img)[-1])
+
+                constants = constants + torch.mean(val_edge_gt)
+
+                variables1 = torch.mean(torch.sigmoid(G_network_bayesian1(val_img)[-1]) * torch.abs(val_edge_gt / M  - (1 - val_edge_gt) / (1 - M)))
+                variables2 = torch.mean(torch.sigmoid(G_network_bayesian2(val_img)[-1]) * torch.abs(val_edge_gt / M  - (1 - val_edge_gt) / (1 - M)))
+                variables3 = torch.mean(torch.sigmoid(G_network_bayesian3(val_img)[-1]) * torch.abs(val_edge_gt / M  - (1 - val_edge_gt) / (1 - M)))
+
+                variables1_noshare = torch.mean(torch.sigmoid(G_network_noshare_bayesian1(val_img)[-1]) * torch.abs(val_edge_gt / M_noshare  - (1 - val_edge_gt) / (1 - M_noshare)))
+                variables2_noshare = torch.mean(torch.sigmoid(G_network_noshare_bayesian2(val_img)[-1]) * torch.abs(val_edge_gt / M_noshare  - (1 - val_edge_gt) / (1 - M_noshare)))
+                variables3_noshare = torch.mean(torch.sigmoid(G_network_noshare_bayesian3(val_img)[-1]) * torch.abs(val_edge_gt / M_noshare  - (1 - val_edge_gt) / (1 - M_noshare)))
+
+                predictions1 = predictions1 + variables1
+                predictions2 = predictions2 + variables2
+                predictions3 = predictions3 + variables3
+
+                predictions_noshare1 = predictions1 + variables1_noshare
+                predictions_noshare2 = predictions2 + variables2_noshare
+                predictions_noshare3 = predictions3 + variables3_noshare
+            
+            constants = val_length * 0.5 / constants
+            
+            W1_previous = W1
+            W2_previous = W2
+            W3_previous = W3
+
+            W1_noshare_previous = W1_noshare
+            W2_noshare_previous = W2_noshare
+            W3_noshare_previous = W3_noshare
+
+            W1 = constants * predictions1
+            W2 = constants * predictions2
+            W3 = constants * predictions3
+
+            W1_noshare = constants * predictions_noshare1
+            W2_noshare = constants * predictions_noshare2
+            W3_noshare = constants * predictions_noshare3
+
+            _W1 = W1 / (W1 + W2 + W3)
+            _W2 = W2 / (W1 + W2 + W3)
+            _W3 = W3 / (W1 + W2 + W3)
+
+            _W1_noshare = W1_noshare / (W1_noshare + W2_noshare + W3_noshare)
+            _W2_noshare = W2_noshare / (W1_noshare + W2_noshare + W3_noshare)
+            _W3_noshare = W3_noshare / (W1_noshare + W2_noshare + W3_noshare)
+
+            print("Finish calculating weights of every parameter samplings. _W1:{}  ,  _W2:{}  ,  _W3:{}  ,  _W1_noshare:{}  ,  _W2_noshare:{}  ,  _W3_noshare:{}".format(_W1,_W2,_W3,_W1_noshare,_W2_noshare,_W3_noshare))
+
+
 
         dis_weight = 0.8 * float(epoch) / float(args.n_epochs)
 
@@ -72,15 +187,17 @@ def main():
                 with torch.no_grad():
                     h, w = img.shape[2], img.shape[3]
 
-                    mask_features_teacher    = G_network_teacher(img)[-1]
-                    mask_features_noshare    = G_network_teacher_noshare(img)[-1]
-                 
+                    #mask_features_teacher    = G_network_teacher(img)[-1]
+                    #mask_features_noshare    = G_network_teacher_noshare(img)[-1]
+                    mask_features_teacher = W1_previous * G_network_bayesian1(val_img)[-1] + W2_previous * G_network_bayesian2(val_img)[-1] + W3_previous * G_network_bayesian3(val_img)[-1]
+                    mask_features_noshare_teacher = W1_noshare_previous * G_network_noshare_bayesian1(val_img)[-1] + W2_noshare_previous * G_network_noshare_bayesian2(val_img)[-1] + W3_noshare_previous * G_network_noshare_bayesian3(val_img)[-1]
+ 
                     uncertainty = torch.abs(F.sigmoid(mask_features_teacher) - 0.5).detach()
-                    uncertainty_noshare = torch.abs(F.sigmoid(mask_features_noshare) - 0.5).detach()
+                    uncertainty_noshare = torch.abs(F.sigmoid(mask_features_noshare_teacher) - 0.5).detach()
 
                     weight = uncertainty / (uncertainty + uncertainty_noshare)
 
-                    res = F.sigmoid(mask_features_teacher * weight + mask_features_noshare * (1 - weight))
+                    res = F.sigmoid(mask_features_teacher * weight + mask_features_noshare_teacher * (1 - weight))
                     
                     edge_gt_soft = edge_gt * (1 - dis_weight) + res * dis_weight
             else:
@@ -174,10 +291,36 @@ if __name__ == '__main__':
     G_network_noshare = Guider_noshare().to(device)
     G_network_teacher_noshare = Guider_noshare().to(device)
 
+    #Initialize Bayesian networks
+    G_network_bayesian1 = Guider_stu_bayesian().to(device)
+    G_network_bayesian2 = Guider_stu_bayesian().to(device)
+    G_network_bayesian3 = Guider_stu_bayesian().to(device)
+
+    G_network_noshare_bayesian1 = Guider_noshare_bayesian().to(device)
+    G_network_noshare_bayesian2 = Guider_noshare_bayesian().to(device)
+    G_network_noshare_bayesian3 = Guider_noshare_bayesian().to(device)
+
+
+    # gradient stopping on momentum networks and Bayesian networks
     for p in G_network_teacher.parameters():
         p.requires_grad = False
     for p in G_network_teacher_noshare.parameters():
         p.requires_grad = False
+
+    for p in G_network_bayesian1.parameters():
+        p.requires_grad = False
+    for p in G_network_bayesian2.parameters():
+        p.requires_grad = False
+    for p in G_network_bayesian3.parameters():
+        p.requires_grad = False
+
+    for p in G_network_noshare_bayesian1.parameters():
+        p.requires_grad = False
+    for p in G_network_noshare_bayesian2.parameters():
+        p.requires_grad = False
+    for p in G_network_noshare_bayesian3.parameters():
+        p.requires_grad = False
+
 
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                          std=[0.229, 0.224, 0.225])
@@ -190,7 +333,7 @@ if __name__ == '__main__':
     dataloader = DataLoader(ImageDataset("/home/fyb", transforms_=transforms_, unaligned=True),
                             batch_size=args.batch_size, shuffle=True, num_workers=args.n_cpu)
     # Testing data loader
-    val_dataloader = DataLoader(ImageDataset("/home/fyb", transforms_=transforms_, unaligned=True, mode='test'),
+    val_dataloader = DataLoader(ImageDataset("/home/fyb", transforms_=transforms_, unaligned=True, mode='val'),
                                 batch_size=1, shuffle=False, num_workers=1)
 
     # Defining optimizer and schedulers
@@ -217,6 +360,14 @@ if __name__ == '__main__':
 
     writer = SingleSummaryWriter(args.log_path)
     global_step = 0
+    W1_previous = 0.33
+    W2_previous = 0.33
+    W3_previous = 0.33
+
+    W1_noshare_previous = 0.33
+    W2_noshare_previous = 0.33
+    W3_noshare_previous = 0.33
+
 
     if args.resume is not None:
         state_dict = torch.load(args.resume)
