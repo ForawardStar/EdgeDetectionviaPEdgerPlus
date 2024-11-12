@@ -330,10 +330,10 @@ if __name__ == '__main__':
                    transforms.ToTensor(), normalize]
 
     # Training data loader
-    dataloader = DataLoader(ImageDataset("/home/fyb", transforms_=transforms_, unaligned=True),
+    dataloader = DataLoader(ImageDataset("../data", transforms_=transforms_, unaligned=True),
                             batch_size=args.batch_size, shuffle=True, num_workers=args.n_cpu)
     # Testing data loader
-    val_dataloader = DataLoader(ImageDataset("/home/fyb", transforms_=transforms_, unaligned=True, mode='val'),
+    val_dataloader = DataLoader(ImageDataset("../data", transforms_=transforms_, unaligned=True, mode='val'),
                                 batch_size=1, shuffle=False, num_workers=1)
 
     # Defining optimizer and schedulers
