@@ -16,7 +16,7 @@ class ImageDataset(Dataset):
         #self.files_edge = sorted(glob.glob(root + '/canny_edge/*.png'))
         self.root = root
         #self.files_img = sorted(os.listdir(root + '/images/'))
-        self.filepath = os.path.join(self.root+'/HED-BSDS', 'test.lst')
+        self.filepath = os.path.join(self.root+'/', 'test.lst')
         with open(self.filepath, 'r') as f:
             self.filelist = f.readlines()
 
@@ -24,7 +24,7 @@ class ImageDataset(Dataset):
         img_file = self.filelist[index].rstrip()
 
         #filename = self.files_img[index % len(self.files_img)] 
-        img_path = self.root + '/HED-BSDS/' + img_file
+        img_path = self.root + img_file
         item_img = self.transform(Image.open(img_path).convert("RGB"))
 
         img_file_split = img_file.split("/")
