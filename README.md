@@ -36,7 +36,7 @@ If you want to train our PEdger++, change the data path of training images, and 
 ```python main.py```
 
 # Testing
-If you want to test our pre-trained model, change the data path of testing images, and then run:
+If you want to test our pre-trained model, put the test images into the 'data/test/' folder, and then run:
 
 ```python test_edge.py```
 
