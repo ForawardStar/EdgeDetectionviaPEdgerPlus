@@ -90,7 +90,7 @@ Tensor = torch.cuda.FloatTensor if cuda else torch.Tensor
 transforms_ = [transforms.ToTensor()]
 
 # Training data loader
-dataloader = DataLoader(ImageDataset("/home/fyb", transforms_=transforms_, unaligned=True),
+dataloader = DataLoader(ImageDataset("../data", transforms_=transforms_, unaligned=True),
                         batch_size=1, shuffle=True, num_workers=1)
 # ----------
 #  Training
