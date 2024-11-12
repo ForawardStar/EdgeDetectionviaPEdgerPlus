@@ -24,6 +24,8 @@ Download the augmented NYUD dataset from:
 
 https://pan.baidu.com/s/1J5z6235tv1xef3HXTaqnKg Extraction Code:t2ce
 
+After downloading the datasets, put them in 'data/' folder.
+
 # Training
 Before starting the training process, the training and validation set should be split through runing:
 
