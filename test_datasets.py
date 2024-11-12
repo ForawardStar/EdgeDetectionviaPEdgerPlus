@@ -12,6 +12,7 @@ class ImageDataset(Dataset):
     def __init__(self, root, transforms_=None, unaligned=False, mode='train'):
         self.transform = transforms.Compose(transforms_)
         self.unaligned = unaligned
+        self.root = root
 
         
         self.filelist = os.listdir(self.root+'/test/')
