@@ -37,9 +37,15 @@ If you want to train our PEdger++, change the data path of training images, and 
 # Testing
 If you want to test our pre-trained model, change the data path of testing images, and then run:
 
-```python test_ensemable_momentum.py```
+```python test_edge.py```
 
-Our pre-trained models are stored in the "checkpoints/" folder, and the relative path to this folder is specified in the "test_ensemble_momentum.py" file.
+Our pre-trained models of PEdger++ without any pre-training are stored in the "models/" folder, i.e., models/checkpoint.pth and the relative path to this folder is specified in the "test_edge.py" file. If you want to evaluate the performance of PEdger++ w/ VGG16 and PEdger++ w/ ResNet50, please runn:
+
+
+```python test_edge_VGG16.py```
+
+
+```python test_edge_ResNet50.py```
 
 # Evaluation
 The matlab code for evaluation can be downloaded in https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/resources.html. Before evaluation, the non-maximum suppression should be done through running ``edge_nms.m" in https://github.com/yun-liu/RCF.  The codes for plotting Precision-Recall curves are in https://github.com/yun-liu/plot-edge-pr-curves.
