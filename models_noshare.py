@@ -7,7 +7,7 @@ class ConvBlock(nn.Sequential):
     def __init__(self, in_channel, out_channel, ker_size, padd, stride):
         super(ConvBlock, self).__init__()
         self.add_module('conv', nn.Conv2d(in_channel, out_channel, kernel_size=ker_size, stride=stride, padding=padd)),
-        self.add_module('norm', nn.BatchNorm2d(out_channel,track_running_stats=False)),
+        #self.add_module('norm', nn.BatchNorm2d(out_channel,track_running_stats=False)),
         self.add_module('LeakyRelu', nn.LeakyReLU(0.2, inplace=True))
 
 
@@ -17,7 +17,7 @@ class ConvINReLU(nn.Sequential):
         super(ConvINReLU, self).__init__(
             nn.Conv2d(in_channel, out_channel, kernel_size, stride, padding, groups=groups, dilation=dilation,
                       bias=False),
-            nn.BatchNorm2d(out_channel,track_running_stats=False),
+            #nn.BatchNorm2d(out_channel,track_running_stats=False),
             nn.LeakyReLU(inplace=True)
         )
 
@@ -36,7 +36,7 @@ class InvertedResidual(nn.Module):
             ConvINReLU(hidden_channel, hidden_channel, groups=hidden_channel, dilation=dilation),
             # 1x1 pointwise conv(linear)
             nn.Conv2d(hidden_channel, in_channel, kernel_size=1, bias=False),
-            nn.BatchNorm2d(in_channel,track_running_stats=False),
+            #nn.BatchNorm2d(in_channel,track_running_stats=False),
         ])
 
         self.conv = nn.Sequential(*layers)
@@ -76,20 +76,20 @@ class Guider_noshare(nn.Module):
 
         self.tail_mask_s2d1 = nn.Sequential(
             nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(32,track_running_stats=False),
+            #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(16,track_running_stats=False),
+            #nn.BatchNorm2d(16,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
         self.tail_mask_d2s1 = nn.Sequential(
             nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(32,track_running_stats=False),
+            #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(16,track_running_stats=False),
+            #nn.BatchNorm2d(16,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
@@ -111,20 +111,20 @@ class Guider_noshare(nn.Module):
 
         self.tail_mask_s2d2 = nn.Sequential(
             nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(32,track_running_stats=False),
+            #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(16,track_running_stats=False),
+            #nn.BatchNorm2d(16,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
         self.tail_mask_d2s2 = nn.Sequential(
             nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(32,track_running_stats=False),
+            #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(16,track_running_stats=False),
+            #nn.BatchNorm2d(16,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
@@ -146,20 +146,20 @@ class Guider_noshare(nn.Module):
 
         self.tail_mask_s2d3 = nn.Sequential(
             nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(32,track_running_stats=False),
+            #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(16,track_running_stats=False),
+            #nn.BatchNorm2d(16,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
         self.tail_mask_d2s3 = nn.Sequential(
             nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(32,track_running_stats=False),
+            #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(16,track_running_stats=False),
+            #nn.BatchNorm2d(16,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
@@ -181,20 +181,20 @@ class Guider_noshare(nn.Module):
 
         self.tail_mask_s2d4 = nn.Sequential(
             nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(32,track_running_stats=False),
+            #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(16,track_running_stats=False),
+            #nn.BatchNorm2d(16,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
         self.tail_mask_d2s4 = nn.Sequential(
             nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(32,track_running_stats=False),
+            #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(16,track_running_stats=False),
+            #nn.BatchNorm2d(16,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
@@ -226,7 +226,7 @@ class Guider_noshare(nn.Module):
                 s2d_features2 = self.tail_mask_s2d2(state_curr2)
                 d2s_features2 = self.tail_mask_d2s2(state_curr2)
                 
-                features2 = F.max_pool2d(s2d_features1, kernel_size=2, stride=2, padding=0) + s2d_features2
+                features2 = F.max_pool2d(s2d_features1, kernel_size=2, stride=2, padding=0).detach() + s2d_features2
                 
                 mask_features.append(features2)
                 single_features.append(
@@ -237,7 +237,7 @@ class Guider_noshare(nn.Module):
                 s2d_features3 = self.tail_mask_s2d3(state_curr3)
                 d2s_features3 = self.tail_mask_d2s3(state_curr3)
                 
-                features3 = F.max_pool2d(features2, kernel_size=2, stride=2, padding=0) + s2d_features3
+                features3 = F.max_pool2d(features2, kernel_size=2, stride=2, padding=0).detach() + s2d_features3
 
                 mask_features.append(features3)
                 single_features.append(
@@ -248,7 +248,7 @@ class Guider_noshare(nn.Module):
                 s2d_features4 = self.tail_mask_s2d4(state_curr4)
                 d2s_features4 = self.tail_mask_d2s4(state_curr4)
                 
-                features4 = F.max_pool2d(features3, kernel_size=2, stride=2, padding=0) + s2d_features4
+                features4 = F.max_pool2d(features3, kernel_size=2, stride=2, padding=0).detach() + s2d_features4
 
                 mask_features.append(features4)
                 single_features.append(
@@ -259,10 +259,10 @@ class Guider_noshare(nn.Module):
         s2d_3 = F.interpolate(mask_features[2], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
         s2d_4 = F.interpolate(mask_features[3], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
 
-        d2s_1 = single_features[0] + single_features[1] + single_features[2] + single_features[
-            3]
-        d2s_2 = single_features[1] + single_features[2] + single_features[3]
-        d2s_3 = single_features[2] + single_features[3]
+        d2s_1 = single_features[0] + single_features[1].detach() + single_features[2].detach() + single_features[
+            3].detach()
+        d2s_2 = single_features[1] + single_features[2].detach() + single_features[3].detach()
+        d2s_3 = single_features[2] + single_features[3].detach()
         d2s_4 = single_features[3]
 
         fuse = self.score_final(torch.cat([s2d_1, s2d_2, s2d_3, s2d_4, d2s_1, d2s_2, d2s_3, d2s_4], dim=1))
