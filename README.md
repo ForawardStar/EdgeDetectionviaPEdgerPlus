@@ -1,4 +1,4 @@
-# EdgeDetectionviaPEdgerPlus
+# PEdger++
 
 This is the implementation of our paper ``PEdger++: Practical Edge Detection via Assembling Cross Information"
 
