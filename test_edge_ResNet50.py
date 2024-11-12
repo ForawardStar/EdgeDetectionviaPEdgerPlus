@@ -94,7 +94,7 @@ normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
 transforms_ = [transforms.ToTensor()]
 
 # Training data loader
-dataloader = DataLoader(ImageDataset("/home/fyb", transforms_=transforms_, unaligned=True),
+dataloader = DataLoader(ImageDataset("../data", transforms_=transforms_, unaligned=True),
                         batch_size=1, shuffle=True, num_workers=1)
 # ----------
 #  Training
