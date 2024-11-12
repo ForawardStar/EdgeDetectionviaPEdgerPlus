@@ -40,7 +40,7 @@ If you want to test our pre-trained model, put the test images into the 'data/te
 
 ```python test_edge.py```
 
-Our pre-trained models of PEdger++ without any pre-training are stored in the "models/" folder, i.e., models/checkpoint.pth and the relative path to this folder is specified in the "test_edge.py" file. If you want to evaluate the performance of PEdger++ w/ VGG16 and PEdger++ w/ ResNet50, please run:
+Our pre-trained models of PEdger++ without any pre-training, have already been stored in the "models/" folder, i.e., models/checkpoint.pth, and the relative path to the 'models/checkpoint.pth' is specified in the "test_edge.py" file. If you want to evaluate the performance of PEdger++ w/ VGG16 and PEdger++ w/ ResNet50, please run:
 
 
 ```python test_edge_VGG16.py```
