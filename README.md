@@ -7,11 +7,7 @@ Edge detection, serving as a crucial component in numerous vision-based applicat
 
 
 # Environment Installation
-To install the packages and dependencies,  run:
-
-```bash install.sh```
-
- All the pakcages can be prepared after running "install.sh". 
+Our model is based on Pytorch
 
 
 # Preparing Data
@@ -26,9 +22,9 @@ Download the augmented NYUD dataset from:
 https://pan.baidu.com/s/1J5z6235tv1xef3HXTaqnKg Extraction Code:t2ce
 
 # Training
-Before starting the training process, run:
+Before starting the training process, the training and validation set should be split through runing:
 
-```python lmdb_io.py```
+```python splittrainval.py```
 
 If you want to train our PEdger++, change the data path of training images, and then run:
 
