@@ -45,9 +45,9 @@ class InvertedResidual(nn.Module):
         return x + self.conv(x)
 
 
-class Guider_stu(nn.Module):
+class Guider_stu_bayesian(nn.Module):
     def __init__(self, in_channels=3, out_channels=3):
-        super(Guider_stu, self).__init__()
+        super(Guider_stu_bayesian, self).__init__()
         self.is_cuda = torch.cuda.is_available()
         self.nfc = 32
         self.min_nfc = 32
@@ -72,6 +72,7 @@ class Guider_stu(nn.Module):
             InvertedResidual(80, 8),
             InvertedResidual(80, 8),
             InvertedResidual(80, 1),
+            nn.Dropout(0.3),
         )
 
         self.tail_mask_s2d = nn.Sequential(
