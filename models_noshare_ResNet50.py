@@ -55,7 +55,7 @@ class Guider_noshare_ResNet50(nn.Module):
         self.num_layer = 3
        
         ResNet50 = models.resnet50(pretrained=True)
-        ResNet50.load_state_dict(torch.load("/root/.cache/torch/hub/checkpoints/resnet50-0676ba61.pth"))
+        
         print("successfully loading pre-trained parameters")
 
         list_features = list(ResNet50.children())[:6]
