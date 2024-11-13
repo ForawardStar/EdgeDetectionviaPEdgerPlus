@@ -33,7 +33,6 @@ parser.add_argument('--ckpt', type=str, default='models/checkpoint.pth')
 parser.add_argument('--epoch', type=int, default=0, help='epoch to start training from')
 parser.add_argument('--n_epochs', type=int, default=1, help='number of epochs of training')
 parser.add_argument('--batch_size', type=int, default=1, help='size of the batches')
-parser.add_argument('--n_residual_blocks', type=int, default=9, help='number of residual blocks in generator')
 opt = parser.parse_args()
 
 # Create sample and checkpoint directories
