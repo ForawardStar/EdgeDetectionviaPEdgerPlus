@@ -2,7 +2,7 @@
 
 This is the implementation of our paper ``PEdger++: Practical Edge Detection via Assembling Cross Information"
 
-# Introduction
+# Brief Introduction
 Edge detection, serving as a crucial component in numerous vision-based applications, aims to effectively extract object boundaries and/or salient edges from natural images. To be viable for broad deployment across devices with varying computational capacities, edge detectors shall balance high accuracy with low computational complexity. This paper addresses the challenge of achieving that balance: {how to efficiently capture discriminative features without relying on large-size and sophisticated models}. We propose PEdger++, a collaborative learning framework designed to reduce computational costs and model sizes while improving edge detection accuracy. The core principle of our PEdger++ is that cross-information derived from  heterogeneous  architectures, diverse training moments, and multiple parameter samplings, is beneficial to enhance learning from an ensemble perspective. Extensive ablation studies together with experimental comparisons on the BSDS500, NYUD and Multicue datasets demonstrate the effectiveness of our approach, both quantitatively and qualitatively, showing clear improvements over existing methods.  We also provide multiple versions of the model with varying computational requirements, highlighting PEdger++'s adaptability with respect to different resource constraints.
 
 
@@ -40,7 +40,9 @@ If you want to test our pre-trained model, put the test images into the 'data/te
 
 ```python test_edge.py```
 
-Our pre-trained models of PEdger++ without any pre-training, have already been stored in the "models/" folder, i.e., models/checkpoint.pth, and the relative path to the 'models/checkpoint.pth' is specified in the "test_edge.py" file. If you want to evaluate the performance of PEdger++ w/ VGG16 and PEdger++ w/ ResNet50, please run:
+Our pre-trained models of PEdger++ without any pre-training, have already been stored in the "models/" folder, i.e., models/checkpoint.pth, and the relative path to the 'models/checkpoint.pth' is specified in the "test_edge.py" file. Simply running 'test_edge.py' can take the images in "data/test/" folder as inputs, and output the detected edges.
+
+If you want to evaluate the performance of PEdger++ w/ VGG16 and PEdger++ w/ ResNet50, please run:
 
 
 ```python test_edge_VGG16.py```
