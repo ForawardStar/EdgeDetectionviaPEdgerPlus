@@ -157,7 +157,7 @@ for epoch in range(opt.epoch, opt.n_epochs):
         #outputs = [torch.sigmoid(r) for r in outputs]
 
         #res = torch.exp(mask_features.detach() - 0.5) / (torch.exp(mask_features.detach() - 0.5) + torch.exp(0.5 - mask_features.detach()))
-        print(", image_size = {}  , filename = {}".format(res.shape, path_name))
+        print(", image_size = {}  , filename = {}".format(res.shape, file_name))
         save_image(res, edge_path_formal + "/" + file_name.split(".")[0] + ".png", nrow=1,
                    normalize=False)
         save_image(res1, edge_path_formal1 + "/" + file_name.split(".")[0] + ".png", nrow=1,
