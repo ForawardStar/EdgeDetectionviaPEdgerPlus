@@ -16,7 +16,7 @@ Or, you can install the packages using requirement.txt, through running:
 # Preparing Data
 Download the augmented BSDS and PASCAL VOC datasets from:
 
-http://mftp.mmcheng.net/liuyun/rcf/data/HED-BSDS.tar.gz
+https://pan.baidu.com/s/16bsUgTf5wmOzYqYNV26irQ?pwd=yh59 Extraction code: yh59
 
 http://mftp.mmcheng.net/liuyun/rcf/data/PASCAL.tar.gz
 
