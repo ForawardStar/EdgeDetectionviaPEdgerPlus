@@ -29,7 +29,7 @@ def get_model_parm_nums(model):
     return total 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--ckpt', type=str, default='/home/fyb/code/PEdgerPlus_Codes_Testset_VGG16/logs/edge_detection/20241112-204307/weights/ckt_0080.pth')
+parser.add_argument('--ckpt', type=str, default='models/checkpoint_VGG16.pth')
 parser.add_argument('--epoch', type=int, default=0, help='epoch to start training from')
 parser.add_argument('--n_epochs', type=int, default=1, help='number of epochs of training')
 parser.add_argument('--dataset_name', type=str, default="monet2photo", help='name of the dataset')
