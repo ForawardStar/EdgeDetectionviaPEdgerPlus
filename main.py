@@ -117,8 +117,8 @@ def main():
                 val_img = val_batch['img'].float().to(device)
                 val_edge_gt = val_batch['edge'].float().to(device)
 
-                M = W1_previous * torch.sigmoid(G_network_bayesian1(val_img)[-1]) + W2_previous * torch.sigmoid(G_network_bayesian2(val_img)[-1]) + W3_previous * torch.sigmoid(G_network_bayesian3(val_img)[-1])
-                M_noshare = W1_noshare_previous * torch.sigmoid(G_network_noshare_bayesian1(val_img)[-1]) + W2_noshare_previous * torch.sigmoid(G_network_noshare_bayesian2(val_img)[-1]) + W3_noshare_previous * torch.sigmoid(G_network_noshare_bayesian3(val_img)[-1])
+                M = W1_previous * torch.sigmoid(G_network_bayesian1(img)[-1]) + W2_previous * torch.sigmoid(G_network_bayesian2(img)[-1]) + W3_previous * torch.sigmoid(G_network_bayesian3(img)[-1])
+                M_noshare = W1_noshare_previous * torch.sigmoid(G_network_noshare_bayesian1(img)[-1]) + W2_noshare_previous * torch.sigmoid(G_network_noshare_bayesian2(img)[-1]) + W3_noshare_previous * torch.sigmoid(G_network_noshare_bayesian3(img)[-1])
 
                 constants = constants + torch.mean(val_edge_gt)
 
