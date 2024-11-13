@@ -3,6 +3,25 @@ import torch.nn.functional as F
 import torch
 import time
 
+class SELayer(nn.Module):
+    def __init__(self, in_channel, out_channel, reduction=16):
+        super(SELayer, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+
+        self.fc = nn.Sequential(
+            nn.Linear(in_channel, in_channel // reduction, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(in_channel // reduction, out_channel, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        b, c, _, _ = x.size()
+
+        y = self.avg_pool(x).view(b, c)
+        y = self.fc(y).view(b, c, 1, 1)
+        return x * y.expand_as(x)
+
 class ConvBlock(nn.Sequential):
     def __init__(self, in_channel, out_channel, ker_size, padd, stride):
         super(ConvBlock, self).__init__()
@@ -72,6 +91,7 @@ class Guider_stu(nn.Module):
             InvertedResidual(80, 8),
             InvertedResidual(80, 8),
             InvertedResidual(80, 1),
+            SELayer(80, 80),
         )
 
         self.tail_mask_s2d = nn.Sequential(
