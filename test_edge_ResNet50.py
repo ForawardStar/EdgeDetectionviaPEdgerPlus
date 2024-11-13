@@ -29,7 +29,7 @@ def get_model_parm_nums(model):
     return total 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--ckpt', type=str, default='/home/fyb/code/0_816_version_EnsemableTeacher_corr_OnlineDistill_confidence_4recurrentFast_noMS_LargerModel_tune08_ReduceSize/logs/edge_detection/20230223-231152/weights/ckt_0018.pth')
+parser.add_argument('--ckpt', type=str, default='/home/fyb/code/PEdgerPlus_Codes_Testset_ResNet50/logs/edge_detection/20241112-205252/weights/ckt_0200.pth')
 parser.add_argument('--epoch', type=int, default=0, help='epoch to start training from')
 parser.add_argument('--n_epochs', type=int, default=1, help='number of epochs of training')
 parser.add_argument('--dataset_name', type=str, default="monet2photo", help='name of the dataset')
@@ -66,19 +66,18 @@ if cuda:
 # G_network.eval()
 # Load pretrained models
 if opt.ckpt is not None:
-    pass
-    #state_dict = torch.load(opt.ckpt)
+    state_dict = torch.load(opt.ckpt)
 
     #G_network_state_dict = state_dict["G_teacher"]
     #G_network.load_state_dict(G_network_state_dict)
 
     #G_network_noshare_state_dict = state_dict["G_teacher_noshare"]
     #G_network_noshare.load_state_dict(G_network_noshare_state_dict)
-    #G_network_state_dict = state_dict["G_teacher"]
-    #G_network.load_state_dict(G_network_state_dict)
+    G_network_state_dict = state_dict["G_teacher"]
+    G_network_noshare1.load_state_dict(G_network_state_dict)
 
-    #G_network_noshare_state_dict = state_dict["G_teacher_noshare"]
-    #G_network_noshare.load_state_dict(G_network_noshare_state_dict)
+    G_network_noshare_state_dict = state_dict["G_teacher_noshare"]
+    G_network_noshare2.load_state_dict(G_network_noshare_state_dict)
 
 total_params = get_model_parm_nums(G_network_noshare1)
 print("*****************************")
@@ -90,20 +89,20 @@ Tensor = torch.cuda.FloatTensor if cuda else torch.Tensor
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                          std=[0.229, 0.224, 0.225])
 # Image transformations
-#transforms_ = [transforms.ToTensor(), normalize]
-transforms_ = [transforms.ToTensor()]
+transforms_ = [transforms.ToTensor(), normalize]
+#transforms_ = [transforms.ToTensor()]
 
 # Training data loader
-dataloader = DataLoader(ImageDataset("../data", transforms_=transforms_, unaligned=True),
+dataloader = DataLoader(ImageDataset("data", transforms_=transforms_, unaligned=True),
                         batch_size=1, shuffle=True, num_workers=1)
 # ----------
 #  Training
 # ---------
 prev_time = time.time()
 
-edge_path_formal = "trainset_ReduceSize_ensemble_" + opt.ckpt.strip().strip('/').split('/')[-1]
-edge_path_formal1 = "trainset_ReduceSize_" + opt.ckpt.strip().strip('/').split('/')[-1]
-edge_path_formal2 = "trainset__ReduceSize_noshare_" + opt.ckpt.strip().strip('/').split('/')[-1]
+edge_path_formal = "VisualResults_ResNet50_ensemble_" + opt.ckpt.strip().strip('/').split('/')[-1]
+edge_path_formal1 = "VisualResults_ResNet50_noshare1_" + opt.ckpt.strip().strip('/').split('/')[-1]
+edge_path_formal2 = "VisualResults_ResNet50_noshare2_" + opt.ckpt.strip().strip('/').split('/')[-1]
 print(edge_path_formal)
 os.makedirs(edge_path_formal, exist_ok=True)
 os.makedirs(edge_path_formal1, exist_ok=True)
@@ -116,10 +115,6 @@ for epoch in range(opt.epoch, opt.n_epochs):
         path_name = batch['path_name'][0]
         file_name = batch['file_name'][0]
         input_image = Variable(batch['img'].type(Tensor))
-        blur_image = Variable(batch['blur'].type(Tensor))
-        gt_image = Variable(batch['gt'].type(Tensor))
-        #input_image = _input_image.clone() * gt_image.clone() + blur_image * torch.abs(1 - gt_image.clone())
-
         
         with torch.no_grad():
             h, w = input_image.shape[2], input_image.shape[3]
@@ -162,11 +157,11 @@ for epoch in range(opt.epoch, opt.n_epochs):
 
         #res = torch.exp(mask_features.detach() - 0.5) / (torch.exp(mask_features.detach() - 0.5) + torch.exp(0.5 - mask_features.detach()))
         print(", image_size = {}  , filename = {}".format(res.shape, path_name))
-        save_image(1-res, edge_path_formal + "/" + file_name.split(".")[0] + ".png", nrow=1,
+        save_image(res, edge_path_formal + "/" + file_name.split(".")[0] + ".png", nrow=1,
                    normalize=False)
-        save_image(1-res1, edge_path_formal1 + "/" + file_name.split(".")[0] + ".png", nrow=1,
+        save_image(res1, edge_path_formal1 + "/" + file_name.split(".")[0] + ".png", nrow=1,
                    normalize=False)
-        save_image(1-res2, edge_path_formal2 + "/" + file_name.split(".")[0] + ".png", nrow=1,
+        save_image(res2, edge_path_formal2 + "/" + file_name.split(".")[0] + ".png", nrow=1,
                    normalize=False)
         #print("state_features[0]:{}  ,  state_features[1]:{}  ,  state_features[2]:{}  ,  state_features[3]:{}  ,  state_features[4]:{}".format(state_features[0].shape, state_features[1].shape, state_features[2].shape, state_features[3].shape, state_features[4].shape))
 
