@@ -57,3 +57,14 @@ Our pre-computed edge maps are available at this link: https://pan.baidu.com/s/1
 # Evaluation
 The matlab code for evaluation can be downloaded in https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/resources.html. Before evaluation, the non-maximum suppression should be done through running ``edge_nms.m" in https://github.com/yun-liu/RCF.  The codes for plotting Precision-Recall curves are in https://github.com/yun-liu/plot-edge-pr-curves.
 
+# Related Projects
+MuGE (CVPR 2024) & UAED (CVPR 2023): https://github.com/ZhouCX117/UAED_MuGE
+
+DiffusionEdge (AAAI 2024): https://github.com/GuHuangAI/DiffusionEdge
+
+EDTER (CVPR 2022): https://github.com/mengyangpu/edter
+
+PEdger (ACM MM 2023): https://github.com/ForawardStar/PEdger
+
+
+
