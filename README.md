@@ -66,5 +66,9 @@ EDTER (CVPR 2022): https://github.com/mengyangpu/edter
 
 PEdger (ACM MM 2023): https://github.com/ForawardStar/PEdger
 
+PiDiNet (ICCV 2021 & TPAMI 2023): https://gitcode.com/gh_mirrors/pid/pidinet
 
+BDCN (CVPR 2019): https://gitcode.com/gh_mirrors/bd/BDCN
+
+RCF (CVPR 2017): https://mmcheng.net/rcfEdg
 
