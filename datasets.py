@@ -3,7 +3,7 @@ import os
 import torchvision.transforms as transforms
 from PIL import Image
 from torch.utils.data import Dataset
-
+import random
 
 
 class ImageDataset(Dataset):
@@ -14,9 +14,14 @@ class ImageDataset(Dataset):
         # self.files_edge = sorted(glob.glob(root + '/canny_edge/*.png'))
         self.root = root
         # self.files_img = sorted(os.listdir(root + '/images/'))
-        self.filepath = os.path.join(self.root, 'bsds_pascal_train_pair.lst')
+        if mode == 'train':
+            self.filepath = os.path.join(self.root, 'bsds_pascal_train_pair_trainset.lst')
+        elif mode == 'val':
+            self.filepath = os.path.join(self.root, 'bsds_pascal_train_pair_valset.lst')
+
         with open(self.filepath, 'r') as f:
             self.filelist = f.readlines()
+    
 
     def __getitem__(self, index):
         img_file, lb_file = self.filelist[index].split()
