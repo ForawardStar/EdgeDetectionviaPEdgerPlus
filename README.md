@@ -57,7 +57,7 @@ Before running 'test_edge_VGG16.py' and 'test_edge_ResNet50.py', the pre-trained
 Our pre-computed edge maps are available at this link: https://pan.baidu.com/s/1TgyJ84oqJVASpA59jhbTeQ?pwd=1ia4
 
 # Evaluation
-The matlab code for evaluation can be downloaded in https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/resources.html. Before evaluation, the non-maximum suppression should be done through running ``edge_nms.m" in https://github.com/yun-liu/RCF.  The codes for plotting Precision-Recall curves are in https://github.com/yun-liu/plot-edge-pr-curves.
+The matlab code for evaluation can be downloaded in https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/resources.html. Before evaluation, the non-maximum suppression should be done through running ``edge_nms.m" in https://github.com/yun-liu/RCF.
 
 # Related Projects
 MuGE (CVPR 2024) & UAED (CVPR 2023): https://github.com/ZhouCX117/UAED_MuGE
