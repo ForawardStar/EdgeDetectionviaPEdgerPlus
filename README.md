@@ -48,6 +48,10 @@ Our pre-trained models of PEdger++ without any pre-training, have already been s
 
 ```python test_edge_ResNet50.py```
 
+Before running 'test_edge_VGG16.py' and 'test_edge_ResNet50.py', the pre-trained models should be downloaded from the link:  https://pan.baidu.com/s/1eZPA8NG_Ahljoxq3eiHTkg?pwd=vjpa Extraction code: vjpa 
+
+
+
 Our pre-computed edge maps are available at this link: https://pan.baidu.com/s/1TgyJ84oqJVASpA59jhbTeQ?pwd=1ia4
 
 # Evaluation
