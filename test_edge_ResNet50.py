@@ -36,8 +36,8 @@ parser.add_argument('--batch_size', type=int, default=1, help='size of the batch
 opt = parser.parse_args()
 
 # Create sample and checkpoint directories
-os.makedirs('images/%s' % opt.dataset_name, exist_ok=True)
-os.makedirs('saved_models/%s' % opt.dataset_name, exist_ok=True)
+os.makedirs('images', exist_ok=True)
+os.makedirs('saved_models', exist_ok=True)
 
 # Losses
 criterion = MyLoss()#.cuda()
