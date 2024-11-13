@@ -7,7 +7,7 @@ class ConvBlock(nn.Sequential):
     def __init__(self, in_channel, out_channel, ker_size, padd, stride):
         super(ConvBlock, self).__init__()
         self.add_module('conv', nn.Conv2d(in_channel, out_channel, kernel_size=ker_size, stride=stride, padding=padd)),
-        #self.add_module('norm', nn.BatchNorm2d(out_channel,track_running_stats=False)),
+        self.add_module('norm', nn.BatchNorm2d(out_channel,track_running_stats=False)),
         self.add_module('LeakyRelu', nn.LeakyReLU(0.2, inplace=True))
 
 
@@ -17,7 +17,7 @@ class ConvINReLU(nn.Sequential):
         super(ConvINReLU, self).__init__(
             nn.Conv2d(in_channel, out_channel, kernel_size, stride, padding, groups=groups, dilation=dilation,
                       bias=False),
-            #nn.BatchNorm2d(out_channel,track_running_stats=False),
+            nn.BatchNorm2d(out_channel,track_running_stats=False),
             nn.LeakyReLU(inplace=True)
         )
 
@@ -36,7 +36,7 @@ class InvertedResidual(nn.Module):
             ConvINReLU(hidden_channel, hidden_channel, groups=hidden_channel, dilation=dilation),
             # 1x1 pointwise conv(linear)
             nn.Conv2d(hidden_channel, in_channel, kernel_size=1, bias=False),
-            #nn.BatchNorm2d(in_channel,track_running_stats=False),
+            nn.BatchNorm2d(in_channel,track_running_stats=False),
         ])
 
         self.conv = nn.Sequential(*layers)
@@ -45,9 +45,9 @@ class InvertedResidual(nn.Module):
         return x + self.conv(x)
 
 
-class Guider_stu_bayesian(nn.Module):
+class Guider_stu(nn.Module):
     def __init__(self, in_channels=3, out_channels=3):
-        super(Guider_stu_bayesian, self).__init__()
+        super(Guider_stu, self).__init__()
         self.is_cuda = torch.cuda.is_available()
         self.nfc = 32
         self.min_nfc = 32
@@ -60,7 +60,6 @@ class Guider_stu_bayesian(nn.Module):
         for i in range(self.num_layer - 2):
             block = InvertedResidual(80, 1)
             self.body.add_module('block%d' % (i + 1), block)
-        self.body.add_module("dropout_body", nn.Dropout(0.3))
 
         self.tail_state = nn.Sequential(
             InvertedResidual(80, 1),
@@ -73,27 +72,26 @@ class Guider_stu_bayesian(nn.Module):
             InvertedResidual(80, 8),
             InvertedResidual(80, 8),
             InvertedResidual(80, 1),
-            nn.Dropout(0.3),
         )
 
         self.tail_mask_s2d = nn.Sequential(
             nn.Conv2d(80, 32, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(32,track_running_stats=False),
+            nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(16,track_running_stats=False),
+            nn.BatchNorm2d(16,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
         self.tail_mask_d2s = nn.Sequential(
             nn.Conv2d(80, 32, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(32,track_running_stats=False),
+            nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(16,track_running_stats=False),
+            nn.BatchNorm2d(16,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
         self.channel_expand = nn.Conv2d(1, 80, 1)
