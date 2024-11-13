@@ -9,7 +9,7 @@ Edge detection, serving as a crucial component in numerous vision-based applicat
 # Environment Installation
 Our model is based on Pytorch, which can be installed following the instructions of the official website: https://pytorch.org/
 
-Or, you can install the pakcages using requirement.txt, through running:
+Or, you can install the packages using requirement.txt, through running:
 ```pip install -r requirement.txt```
 
 
