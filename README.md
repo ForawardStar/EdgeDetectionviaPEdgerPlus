@@ -50,7 +50,8 @@ If you want to evaluate the performance of PEdger++ w/ VGG16 and PEdger++ w/ Res
 
 ```python test_edge_ResNet50.py```
 
-Before running 'test_edge_VGG16.py' and 'test_edge_ResNet50.py', the pre-trained models should be downloaded from the link:  https://pan.baidu.com/s/1eZPA8NG_Ahljoxq3eiHTkg?pwd=vjpa Extraction code: vjpa 
+Before running 'test_edge_VGG16.py' and 'test_edge_ResNet50.py', the pre-trained models should be downloaded from the link: 
+ https://pan.baidu.com/s/129W63l5nyYMZnE_8-0C9lA?pwd=dcfv Extraction Code: dcfv 
 
 
 
