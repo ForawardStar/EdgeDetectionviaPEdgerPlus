@@ -152,8 +152,7 @@ class Guider_noshare_ResNet50(nn.Module):
         single_features = []
         state_curr = 0    
         resnet50_outs = []
-        torch.cuda.synchronize()
-        start = time.time()
+        
         for name, module in self.resnet50._modules.items():
             x = module(x)
             #print("name:{}  ,  type:{}  ,  x shape:{}".format(name, type(name), x.shape))
@@ -219,8 +218,6 @@ class Guider_noshare_ResNet50(nn.Module):
         #print("s2d_1:{} , s2d_2:{} , s2d_3:{} , s2d_4:{} , d2s_1:{} , d2_2:{} , d2s_3:{} , d2s_4:{}".format(s2d_1.shape, s2d_2.shape, s2d_3.shape, s2d_4.shape, d2s_1.shape, d2s_2.shape, d2s_3.shape, d2s_4.shape))
 
         fuse = self.score_final(torch.cat([s2d_1, s2d_2, s2d_3, s2d_4, d2s_1, d2s_2, d2s_3, d2s_4], dim=1))
-        torch.cuda.synchronize()
-        end = time.time()
-        print("PEdgerPlus w/ ResNet50 running time: ", end - start)
+        
 
         return [s2d_1, s2d_2, s2d_3, s2d_4, d2s_1, d2s_2, d2s_3, d2s_4, fuse]
