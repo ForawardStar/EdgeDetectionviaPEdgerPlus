@@ -140,14 +140,7 @@ def main():
             
             constants = val_length * 0.5 / constants
             
-            W1_previous = W1
-            W2_previous = W2
-            W3_previous = W3
-
-            W1_noshare_previous = W1_noshare
-            W2_noshare_previous = W2_noshare
-            W3_noshare_previous = W3_noshare
-
+            
             W1 = constants * predictions1
             W2 = constants * predictions2
             W3 = constants * predictions3
@@ -164,6 +157,15 @@ def main():
             _W2_noshare = W2_noshare / (W1_noshare + W2_noshare + W3_noshare)
             _W3_noshare = W3_noshare / (W1_noshare + W2_noshare + W3_noshare)
 
+            W1_previous = _W1
+            W2_previous = _W2
+            W3_previous = _W3
+
+            W1_noshare_previous = _W1_noshare
+            W2_noshare_previous = _W2_noshare
+            W3_noshare_previous = _W3_noshare
+
+            
             print("Finish calculating weights of every parameter samplings. _W1:{}  ,  _W2:{}  ,  _W3:{}  ,  _W1_noshare:{}  ,  _W2_noshare:{}  ,  _W3_noshare:{}".format(_W1,_W2,_W3,_W1_noshare,_W2_noshare,_W3_noshare))
 
 
