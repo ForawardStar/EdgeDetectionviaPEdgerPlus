@@ -102,7 +102,7 @@ dataloader = DataLoader(ImageDataset("data", transforms_=transforms_, unaligned=
 prev_time = time.time()
 
 edge_path_formal = "VisualResults_VGG16_ensemble_" + opt.ckpt.strip().strip('/').split('/')[-1]
-edge_path_formal1 = "VisualResults_VGG16_noshare1" + opt.ckpt.strip().strip('/').split('/')[-1]
+edge_path_formal1 = "VisualResults_VGG16_noshare1_" + opt.ckpt.strip().strip('/').split('/')[-1]
 edge_path_formal2 = "VisualResults_VGG16_noshare2_" + opt.ckpt.strip().strip('/').split('/')[-1]
 print(edge_path_formal)
 os.makedirs(edge_path_formal, exist_ok=True)
