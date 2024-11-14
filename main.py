@@ -6,10 +6,10 @@ from torch.utils.data import DataLoader
 
 from datasets import *
 from loss_function import MyLoss
-from models import *
-from models_noshare import Guider_noshare
-from models_bayesian import *
-from models_noshare_bayesian import Guider_noshare_bayesian
+from models_recurrent import *
+from models_nonrecurrent import Net_NonRecurrent
+from models_recurrent_bayesian import *
+from models_nonrecurrent_bayesian import Net_NonRecurrent_bayesian
 from tools import SingleSummaryWriter, mutils, saver
 from tools.metric_utils import AverageMeters, write_loss
 from utils import *
@@ -288,19 +288,19 @@ if __name__ == '__main__':
     criterion = MyLoss().to(device)
 
     # Initialize student and teacher
-    G_network = Guider_stu().to(device)
-    G_network_teacher = Guider_stu().to(device)
-    G_network_noshare = Guider_noshare().to(device)
-    G_network_teacher_noshare = Guider_noshare().to(device)
+    G_network = Net_Recurrent().to(device)
+    G_network_teacher = Net_Recurrent().to(device)
+    G_network_noshare = Net_NonRecurrent().to(device)
+    G_network_teacher_noshare = Net_NonRecurrent().to(device)
 
     #Initialize Bayesian networks
-    G_network_bayesian1 = Guider_stu_bayesian().to(device)
-    G_network_bayesian2 = Guider_stu_bayesian().to(device)
-    G_network_bayesian3 = Guider_stu_bayesian().to(device)
+    G_network_bayesian1 = Net_Recurrent_bayesian().to(device)
+    G_network_bayesian2 = Net_Recurrent_bayesian().to(device)
+    G_network_bayesian3 = Net_Recurrent_bayesian().to(device)
 
-    G_network_noshare_bayesian1 = Guider_noshare_bayesian().to(device)
-    G_network_noshare_bayesian2 = Guider_noshare_bayesian().to(device)
-    G_network_noshare_bayesian3 = Guider_noshare_bayesian().to(device)
+    G_network_noshare_bayesian1 = Net_NonRecurrent_bayesian().to(device)
+    G_network_noshare_bayesian2 = Net_NonRecurrent_bayesian().to(device)
+    G_network_noshare_bayesian3 = Net_NonRecurrent_bayesian().to(device)
 
 
     # gradient stopping on momentum networks and Bayesian networks
