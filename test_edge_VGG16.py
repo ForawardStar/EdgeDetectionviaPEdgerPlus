@@ -13,8 +13,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torch.autograd import Variable
 
-from models_noshare_VGG16 import Guider_noshare_VGG16
-from models_noshare_VGG16 import Guider_noshare_VGG16
+from models_noshare_VGG16 import Net_NonRecurrent_VGG16
 from test_datasets import *
 from utils import *
 
@@ -25,7 +24,7 @@ from loss_function import *
 
 def get_model_parm_nums(model): 
     total = sum([param.numel() for param in model.parameters()]) 
-    total = float(total) / 1024 
+    total = float(total) / 1000 
     return total 
 
 parser = argparse.ArgumentParser()
@@ -44,31 +43,26 @@ criterion = MyLoss()#.cuda()
 
 cuda = True if torch.cuda.is_available() else False
 
-G_network_noshare1 = Guider_noshare_VGG16()
-G_network_noshare2 = Guider_noshare_VGG16()
+G_network_nonrecurrent1 = Net_NonRecurrent_VGG16()
+G_network_nonrecurrent2 = Net_NonRecurrent_VGG16()
 
 if cuda:
-    G_network_noshare1 = G_network_noshare1.cuda()
-    G_network_noshare2 = G_network_noshare2.cuda()
+    G_network_nonrecurrent1 = G_network_nonrecurrent1.cuda()
+    G_network_nonrecurrent2 = G_network_nonrecurrent2.cuda()
 
 # G_network.eval()
 # Load pretrained models
 if opt.ckpt is not None:
     state_dict = torch.load(opt.ckpt)
 
-    #G_network_state_dict = state_dict["G_teacher"]
-    #G_network.load_state_dict(G_network_state_dict)
+    G_network_nonrecurrent1_state_dict1 = state_dict["G_teacher"]
+    G_network_nonrecurrent1.load_state_dict(G_network_nonrecurrent1_state_dict1)
 
-    #G_network_noshare_state_dict = state_dict["G_teacher_noshare"]
-    #G_network_noshare.load_state_dict(G_network_noshare_state_dict)
-    G_network_noshare_state_dict1 = state_dict["G_teacher"]
-    G_network_noshare1.load_state_dict(G_network_noshare_state_dict1)
-
-    G_network_noshare_state_dict2 = state_dict["G_teacher_noshare"]
-    G_network_noshare2.load_state_dict(G_network_noshare_state_dict2)
+    G_network_nonrecurrent2_state_dict2 = state_dict["G_teacher_noshare"]
+    G_network_nonrecurrent2.load_state_dict(G_network_nonrecurrent2_state_dict2)
     print("loading checkpoints successfully")
 
-total_params = get_model_parm_nums(G_network_noshare1)
+total_params = get_model_parm_nums(G_network_nonrecurrent1)
 print("*****************************")
 print("total_params:  ", total_params)
 print("*****************************")
