@@ -117,8 +117,8 @@ def main():
                 val_img = val_batch['img'].float().to(device)
                 val_edge_gt = val_batch['edge'].float().to(device)
 
-                M_recurrent = W1_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian1(img)[-1]) + W2_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian2(img)[-1]) + W3_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian3(img)[-1])
-                M_nonrecurrent = W1_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian1(img)[-1]) + W2_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian2(img)[-1]) + W3_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian3(img)[-1])
+                M_recurrent = W1_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian1(val_img)[-1]) + W2_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian2(val_img)[-1]) + W3_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian3(val_img)[-1])
+                M_nonrecurrent = W1_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian1(val_img)[-1]) + W2_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian2(val_img)[-1]) + W3_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian3(val_img)[-1])
 
                 constants = constants + torch.mean(val_edge_gt)
 
@@ -206,18 +206,18 @@ def main():
                 img_smoothed = bilateralFilter(img, 5)
                 img = img_smoothed if random.random() > 0.5 else img + 2 * (img - img_smoothed)
 
-            edge_feats = G_network(img)
-            edge_preds = [torch.sigmoid(r) for r in edge_feats]
+            edge_feats_recurrent = G_network_recurrent(img)
+            edge_preds_recurrent = [torch.sigmoid(r) for r in edge_feats_recurrent]
 
             # Identity loss
-            loss, loss_items = criterion(edge_preds, edge_gt, edge_gt_soft)
+            loss_recurrent, loss_recurrent_items = criterion(edge_preds_recurrent, edge_gt, edge_gt_soft)
 
             if torch.isnan(loss):
                 saver.save_image(img, './nan_im')
                 saver.save_image(edge_gt, './nan_edge_gt')
                 exit(0)
-            loss = loss / args.iter_size
-            loss.backward()
+            loss_recurrent = loss_recurrent / args.iter_size
+            loss_recurrent.backward()
 
             edge_feats_nonrecurrent = G_network_nonrecurrent(img)
             edge_preds_nonrecurrent = [torch.sigmoid(r) for r in edge_feats_nonrecurrent]
@@ -239,7 +239,7 @@ def main():
                 optimizer_G_nonrecurrent.step()
                 optimizer_G_nonrecurrent.zero_grad()
 
-            loss_recurrent_meter.update(loss_items)
+            loss_recurrent_meter.update(loss_recurrent_items)
             loss_nonrecurrent_meter.update(loss_nonrecurrent_items)
 
             if global_step % args.log_interval == 0:
@@ -254,7 +254,7 @@ def main():
 
             global_step += 1
 
-            del loss, loss_nonrecurrent, img, edge_preds, edge_preds_nonrecurrent, edge_feats, edge_feats_nonrecurrent
+            del loss_recurrent, loss_nonrecurrent, img, edge_preds, edge_preds_nonrecurrent, edge_feats, edge_feats_nonrecurrent
 
         loss_recurrent_meter.reset()
         loss_nonrecurrent_meter.reset()
