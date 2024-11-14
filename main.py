@@ -172,15 +172,12 @@ def main():
 
         dis_weight = 0.8 * float(epoch) / float(args.n_epochs)
 
-        loss_meter = AverageMeters()
+        loss_recurrent_meter = AverageMeters()
         loss_nonrecurrent_meter = AverageMeters()
         bar = tqdm.tqdm(dataloader, disable=True)
         saver.base_url = os.path.join(args.saved_path, 'results')
 
         for i, batch in enumerate(bar):
-            # if args.debug and i > 2000:
-            #     break
-
             # Set model input
             img = batch['img'].float().to(device)
             edge_gt = batch['edge'].float().to(device)
@@ -191,8 +188,8 @@ def main():
 
                     #mask_features_teacher    = G_network_teacher(img)[-1]
                     #mask_features_nonrecurrent    = G_network_teacher_nonrecurrent(img)[-1]
-                    mask_features_teacher = W1_previous * G_network_bayesian1(val_img)[-1] + W2_previous * G_network_bayesian2(val_img)[-1] + W3_previous * G_network_bayesian3(val_img)[-1]
-                    mask_features_nonrecurrent_teacher = W1_nonrecurrent_previous * G_network_nonrecurrent_bayesian1(val_img)[-1] + W2_nonrecurrent_previous * G_network_nonrecurrent_bayesian2(val_img)[-1] + W3_nonrecurrent_previous * G_network_nonrecurrent_bayesian3(val_img)[-1]
+                    mask_features_teacher = W1_previous * G_network_bayesian1(img)[-1] + W2_previous * G_network_bayesian2(img)[-1] + W3_previous * G_network_bayesian3(img)[-1]
+                    mask_features_nonrecurrent_teacher = W1_nonrecurrent_previous * G_network_nonrecurrent_bayesian1(img)[-1] + W2_nonrecurrent_previous * G_network_nonrecurrent_bayesian2(img)[-1] + W3_nonrecurrent_previous * G_network_nonrecurrent_bayesian3(img)[-1]
  
                     uncertainty = torch.abs(F.sigmoid(mask_features_teacher) - 0.5).detach()
                     uncertainty_nonrecurrent = torch.abs(F.sigmoid(mask_features_nonrecurrent_teacher) - 0.5).detach()
@@ -242,12 +239,12 @@ def main():
                 optimizer_G_nonrecurrent.step()
                 optimizer_G_nonrecurrent.zero_grad()
 
-            loss_meter.update(loss_items)
+            loss_recurrent_meter.update(loss_items)
             loss_nonrecurrent_meter.update(loss_nonrecurrent_items)
 
             if global_step % args.log_interval == 0:
-                print('\r[Epoch %d/%d, Iter: %d/%d]: %s, %s' % (epoch, args.n_epochs, i, len(bar), loss_meter, loss_nonrecurrent_meter), end="")
-                write_loss(writer, 'train', loss_meter, global_step)
+                print('\r[Epoch %d/%d, Iter: %d/%d]: %s, %s' % (epoch, args.n_epochs, i, len(bar), loss_recurrent_meter, loss_nonrecurrent_meter), end="")
+                write_loss(writer, 'train', loss_recurrent_meter, global_step)
 
             if global_step % args.sample_interval == 0:
                 with torch.no_grad():
@@ -259,7 +256,7 @@ def main():
 
             del loss, loss_nonrecurrent, img, edge_preds, edge_preds_nonrecurrent, edge_feats, edge_feats_nonrecurrent
 
-        loss_meter.reset()
+        loss_recurrent_meter.reset()
         loss_nonrecurrent_meter.reset()
         if args.checkpoint_interval != -1 and epoch % args.checkpoint_interval == 0:
             # Save model checkpoints
