@@ -94,7 +94,7 @@ class Net_Recurrent(nn.Module):
             SELayer(80, 80),
         )
 
-        self.tail_mask_s2d = nn.Sequential(
+        self.tail_mask_c2f = nn.Sequential(
             nn.Conv2d(80, 32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
@@ -104,7 +104,7 @@ class Net_Recurrent(nn.Module):
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
-        self.tail_mask_d2s = nn.Sequential(
+        self.tail_mask_f2c = nn.Sequential(
             nn.Conv2d(80, 32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
@@ -135,33 +135,33 @@ class Net_Recurrent(nn.Module):
             else:
                 recurrent_input = tail_features
             state_curr = self.tail_state(recurrent_input)
-            s2d_features = self.tail_mask_s2d(state_curr)
-            d2s_features = self.tail_mask_d2s(state_curr)
+            c2f_features = self.tail_mask_c2f(state_curr)
+            f2c_features = self.tail_mask_f2c(state_curr)
             if step > 0:
-                features = F.max_pool2d(prev_features, kernel_size=2, stride=2, padding=0).detach() + s2d_features
+                features = F.max_pool2d(prev_features, kernel_size=2, stride=2, padding=0).detach() + c2f_features
             else:
-                features = s2d_features
+                features = c2f_features
 
-            state_features.append(s2d_features)
+            state_features.append(c2f_features)
             mask_features.append(features)
             single_features.append(
-                F.interpolate(d2s_features, size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear'))
+                F.interpolate(f2c_features, size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear'))
             tail_features = self.channel_expand(features)
             prev_features = features.detach()
 
-        s2d_1 = mask_features[0]
-        s2d_2 = F.interpolate(mask_features[1], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
-        s2d_3 = F.interpolate(mask_features[2], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
-        s2d_4 = F.interpolate(mask_features[3], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
-        s2d_5 = F.interpolate(mask_features[4], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
+        c2f_1 = mask_features[0]
+        c2f_2 = F.interpolate(mask_features[1], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
+        c2f_3 = F.interpolate(mask_features[2], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
+        c2f_4 = F.interpolate(mask_features[3], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
+        c2f_5 = F.interpolate(mask_features[4], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
 
-        d2s_1 = single_features[0] + single_features[1].detach() + single_features[2].detach() + single_features[
+        f2c_1 = single_features[0] + single_features[1].detach() + single_features[2].detach() + single_features[
             3].detach() + single_features[4].detach()
-        d2s_2 = single_features[1] + single_features[2].detach() + single_features[3].detach() + single_features[4].detach()
-        d2s_3 = single_features[2] + single_features[3].detach() + single_features[4].detach()
-        d2s_4 = single_features[3] + single_features[4].detach()
-        d2s_5 = single_features[4]
+        f2c_2 = single_features[1] + single_features[2].detach() + single_features[3].detach() + single_features[4].detach()
+        f2c_3 = single_features[2] + single_features[3].detach() + single_features[4].detach()
+        f2c_4 = single_features[3] + single_features[4].detach()
+        f2c_5 = single_features[4]
 
-        fuse = self.score_final(torch.cat([s2d_1, s2d_2, s2d_3, s2d_4, s2d_5, d2s_1, d2s_2, d2s_3, d2s_4, d2s_5], dim=1))
+        fuse = self.score_final(torch.cat([c2f_1, c2f_2, c2f_3, c2f_4, c2f_5, f2c_1, f2c_2, f2c_3, f2c_4, f2c_5], dim=1))
         
-        return [s2d_1, s2d_2, s2d_3, s2d_4, s2d_5, d2s_1, d2s_2, d2s_3, d2s_4, d2s_5, fuse]
+        return [c2f_1, c2f_2, c2f_3, c2f_4, c2f_5, f2c_1, f2c_2, f2c_3, f2c_4, f2c_5, fuse]
