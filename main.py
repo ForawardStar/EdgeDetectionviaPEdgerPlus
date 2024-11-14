@@ -122,51 +122,51 @@ def main():
 
                 constants = constants + torch.mean(val_edge_gt)
 
-                variables1_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian1(val_img)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M)))
-                variables2_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian2(val_img)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M)))
-                variables3_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian3(val_img)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M)))
+                variables1_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian1(val_img)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M_recurrent)))
+                variables2_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian2(val_img)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M_recurrent)))
+                variables3_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian3(val_img)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M_recurrent)))
 
                 variables1_nonrecurrent = torch.mean(torch.sigmoid(G_network_nonrecurrent_bayesian1(val_img)[-1]) * torch.abs(val_edge_gt / M_nonrecurrent  - (1 - val_edge_gt) / (1 - M_nonrecurrent)))
                 variables2_nonrecurrent = torch.mean(torch.sigmoid(G_network_nonrecurrent_bayesian2(val_img)[-1]) * torch.abs(val_edge_gt / M_nonrecurrent  - (1 - val_edge_gt) / (1 - M_nonrecurrent)))
                 variables3_nonrecurrent = torch.mean(torch.sigmoid(G_network_nonrecurrent_bayesian3(val_img)[-1]) * torch.abs(val_edge_gt / M_nonrecurrent  - (1 - val_edge_gt) / (1 - M_nonrecurrent)))
 
-                predictions1 = predictions1 + variables1
-                predictions2 = predictions2 + variables2
-                predictions3 = predictions3 + variables3
+                predictions_recurrent1 = predictions_recurrent1 + variables1_recurrent
+                predictions_recurrent2 = predictions_recurrent2 + variables2_recurrent
+                predictions_recurrent3 = predictions_recurrent3 + variables3_recurrent
 
-                predictions_nonrecurrent1 = predictions1 + variables1_nonrecurrent
-                predictions_nonrecurrent2 = predictions2 + variables2_nonrecurrent
-                predictions_nonrecurrent3 = predictions3 + variables3_nonrecurrent
+                predictions_nonrecurrent1 = predictions_nonrecurrent1 + variables1_nonrecurrent
+                predictions_nonrecurrent2 = predictions_nonrecurrent2 + variables2_nonrecurrent
+                predictions_nonrecurrent3 = predictions_nonrecurrent3 + variables3_nonrecurrent
             
             constants = val_length * 0.5 / constants
             
             
-            W1 = constants * predictions1
-            W2 = constants * predictions2
-            W3 = constants * predictions3
+            W1_recurrent = constants * predictions_recurrent1
+            W2_recurrent = constants * predictions_recurrent2
+            W3_recurrent = constants * predictions_recurrent3
 
             W1_nonrecurrent = constants * predictions_nonrecurrent1
             W2_nonrecurrent = constants * predictions_nonrecurrent2
             W3_nonrecurrent = constants * predictions_nonrecurrent3
 
-            _W1 = W1 / (W1 + W2 + W3)
-            _W2 = W2 / (W1 + W2 + W3)
-            _W3 = W3 / (W1 + W2 + W3)
+            _W1_recurrent = W1_recurrent / (W1_recurrent + W2_recurrent + W3_recurrent)
+            _W2_recurrent = W2_recurrent / (W1_recurrent + W2_recurrent + W3_recurrent)
+            _W3_recurrent = W3_recurrent / (W1_recurrent + W2_recurrent + W3_recurrent)
 
             _W1_nonrecurrent = W1_nonrecurrent / (W1_nonrecurrent + W2_nonrecurrent + W3_nonrecurrent)
             _W2_nonrecurrent = W2_nonrecurrent / (W1_nonrecurrent + W2_nonrecurrent + W3_nonrecurrent)
             _W3_nonrecurrent = W3_nonrecurrent / (W1_nonrecurrent + W2_nonrecurrent + W3_nonrecurrent)
 
-            W1_previous = _W1
-            W2_previous = _W2
-            W3_previous = _W3
+            W1_recurrent_previous = _W1_recurrent
+            W2_recurrent_previous = _W2_recurrent
+            W3_recurrent_previous = _W3_recurrent
 
             W1_nonrecurrent_previous = _W1_nonrecurrent
             W2_nonrecurrent_previous = _W2_nonrecurrent
             W3_nonrecurrent_previous = _W3_nonrecurrent
 
             
-            print("Finish calculating weights of every parameter samplings. _W1:{}  ,  _W2:{}  ,  _W3:{}  ,  _W1_nonrecurrent:{}  ,  _W2_nonrecurrent:{}  ,  _W3_nonrecurrent:{}".format(_W1,_W2,_W3,_W1_nonrecurrent,_W2_nonrecurrent,_W3_nonrecurrent))
+            print("Finish calculating weights of every parameter samplings")
 
 
 
