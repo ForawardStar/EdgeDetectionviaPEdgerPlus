@@ -362,27 +362,27 @@ if __name__ == '__main__':
 
     writer = SingleSummaryWriter(args.log_path)
     global_step = 0
-    W1_previous = 0.33
-    W2_previous = 0.33
-    W3_previous = 0.33
+    W1_recurrent_previous = 0.33
+    W2_recurrent_previous = 0.33
+    W3_recurrent_previous = 0.33
 
-    W1_noshare_previous = 0.33
-    W2_noshare_previous = 0.33
-    W3_noshare_previous = 0.33
+    W1_nonrecurrent_previous = 0.33
+    W2_nonrecurrent_previous = 0.33
+    W3_nonrecurrent_previous = 0.33
 
 
     if args.resume is not None:
         state_dict = torch.load(args.resume)
         args.epoch = state_dict['epoch'] + 1
-        G_network.load_state_dict(state_dict['G'])
-        G_network_teacher.load_state_dict(state_dict['G_teacher'])
-        G_network_noshare.load_state_dict(state_dict['G_noshare'])
-        G_network_teacher_noshare.load_state_dict(state_dict['G_teacher_noshare'])
-        optimizer_G.load_state_dict(state_dict['optimizer'])
-        optimizer_G_noshare.load_state_dict(state_dict['optimizer_noshare'])
-        scheduler_cosine.load_state_dict(state_dict['scheduler'])
-        scheduler_warmup.load_state_dict(state_dict['scheduler_warmup'])
-        scheduler_cosine_noshare.load_state_dict(state_dict['scheduler_noshare'])
-        scheduler_warmup_noshare.load_state_dict(state_dict['scheduler_warmup_noshare'])
+        G_network_recurrent.load_state_dict(state_dict['G_recurrent'])
+        G_network_recurrent_teacher.load_state_dict(state_dict['G_recurrent_teacher'])
+        G_network_nonrecurrent.load_state_dict(state_dict['G_nonrecurrent'])
+        G_network_nonrecurrent_teacher.load_state_dict(state_dict['G_nonrecurrent_teacher'])
+        optimizer_G_recurrent.load_state_dict(state_dict['optimizer_recurrent'])
+        optimizer_G_nonrecurrent.load_state_dict(state_dict['optimizer_nonrecurrent'])
+        scheduler_cosine_recurrent.load_state_dict(state_dict['scheduler_recurrent'])
+        scheduler_warmup_recurrent.load_state_dict(state_dict['scheduler_warmup_recurrent'])
+        scheduler_cosine_nonrecurrent.load_state_dict(state_dict['scheduler_nonrecurrent'])
+        scheduler_warmup_nonrecurrent.load_state_dict(state_dict['scheduler_warmup_nonrecurrent'])
 
     main()
