@@ -101,7 +101,7 @@ for epoch in range(opt.epoch, opt.n_epochs):
         with torch.no_grad():
             h, w = input_image.shape[2], input_image.shape[3]
             
-            mask_features    = G_network(input_image)[-1]
+            mask_features    = G_network_noshare(input_image)[-1]
             
             res = torch.exp(mask_features.detach() - 0.5) / (torch.exp(mask_features.detach() - 0.5) + torch.exp(0.5 - mask_features.detach()))
             
