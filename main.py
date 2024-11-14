@@ -107,9 +107,9 @@ def main():
             bar_val = tqdm.tqdm(val_dataloader, disable=True)
             val_length = len(bar_val)
             constants = 0.0
-            predictions1 = 0.0
-            predictions2 = 0.0
-            predictions3 = 0.0
+            predictions_recurrent1 = 0.0
+            predictions_recurrent2 = 0.0
+            predictions_recurrent3 = 0.0
             predictions_nonrecurrent1 = 0.0
             predictions_nonrecurrent2 = 0.0
             predictions_nonrecurrent3 = 0.0
@@ -117,14 +117,14 @@ def main():
                 val_img = val_batch['img'].float().to(device)
                 val_edge_gt = val_batch['edge'].float().to(device)
 
-                M = W1_previous * torch.sigmoid(G_network_bayesian1(img)[-1]) + W2_previous * torch.sigmoid(G_network_bayesian2(img)[-1]) + W3_previous * torch.sigmoid(G_network_bayesian3(img)[-1])
+                M_recurrent = W1_previous * torch.sigmoid(G_network_recurrent_bayesian1(img)[-1]) + W2_previous * torch.sigmoid(G_network_recurrent_bayesian2(img)[-1]) + W3_previous * torch.sigmoid(G_network_recurrent_bayesian3(img)[-1])
                 M_nonrecurrent = W1_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian1(img)[-1]) + W2_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian2(img)[-1]) + W3_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian3(img)[-1])
 
                 constants = constants + torch.mean(val_edge_gt)
 
-                variables1 = torch.mean(torch.sigmoid(G_network_bayesian1(val_img)[-1]) * torch.abs(val_edge_gt / M  - (1 - val_edge_gt) / (1 - M)))
-                variables2 = torch.mean(torch.sigmoid(G_network_bayesian2(val_img)[-1]) * torch.abs(val_edge_gt / M  - (1 - val_edge_gt) / (1 - M)))
-                variables3 = torch.mean(torch.sigmoid(G_network_bayesian3(val_img)[-1]) * torch.abs(val_edge_gt / M  - (1 - val_edge_gt) / (1 - M)))
+                variables1_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian1(val_img)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M)))
+                variables2_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian2(val_img)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M)))
+                variables3_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian3(val_img)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M)))
 
                 variables1_nonrecurrent = torch.mean(torch.sigmoid(G_network_nonrecurrent_bayesian1(val_img)[-1]) * torch.abs(val_edge_gt / M_nonrecurrent  - (1 - val_edge_gt) / (1 - M_nonrecurrent)))
                 variables2_nonrecurrent = torch.mean(torch.sigmoid(G_network_nonrecurrent_bayesian2(val_img)[-1]) * torch.abs(val_edge_gt / M_nonrecurrent  - (1 - val_edge_gt) / (1 - M_nonrecurrent)))
