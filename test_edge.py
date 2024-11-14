@@ -77,8 +77,6 @@ dataloader = DataLoader(ImageDataset("data", transforms_=transforms_, unaligned=
 # ----------
 #  Training
 # ---------
-prev_time = time.time()
-
 edge_path_formal = "VisualResults_" + opt.ckpt.strip().strip('/').split('/')[-1].replace(".pth", "")
 print(edge_path_formal)
 os.makedirs(edge_path_formal, exist_ok=True)
