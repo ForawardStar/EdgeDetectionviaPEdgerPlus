@@ -46,9 +46,9 @@ class InvertedResidual(nn.Module):
         return x + self.conv(x)
 
 
-class Guider_noshare_ResNet50(nn.Module):
+class Net_NonRecurrent_ResNet50(nn.Module):
     def __init__(self, in_channels=3, out_channels=3):
-        super(Guider_noshare_ResNet50, self).__init__()
+        super(Net_NonRecurrent_ResNet50, self).__init__()
         self.is_cuda = torch.cuda.is_available()
         self.nfc = 32
         self.min_nfc = 32
