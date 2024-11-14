@@ -24,7 +24,7 @@ from loss_function import *
 
 def get_model_parm_nums(model): 
     total = sum([param.numel() for param in model.parameters()]) 
-    total = float(total) / 1024 
+    total = float(total) / 1000
     return total 
 
 parser = argparse.ArgumentParser()
