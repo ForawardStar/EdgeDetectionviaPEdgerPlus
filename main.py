@@ -340,17 +340,17 @@ if __name__ == '__main__':
 
     # Defining optimizer and schedulers
 
-    optimizer_G = torch.optim.AdamW(filter(lambda p: p.requires_grad, G_network.parameters()),
+    optimizer_G_recurrent = torch.optim.AdamW(filter(lambda p: p.requires_grad, G_network_recurrent.parameters()),
                                     lr=args.lr, betas=(0.9, 0.9), weight_decay=1e-3)
-    scheduler_cosine = CosineAnnealingLR(optimizer_G, args.n_epochs)
-    scheduler_warmup = GradualWarmupScheduler(
-        optimizer_G, multiplier=8, total_epoch=4, after_scheduler=scheduler_cosine)
+    scheduler_cosine_recurrent = CosineAnnealingLR(optimizer_G_recurrent, args.n_epochs)
+    scheduler_warmup_recurrent = GradualWarmupScheduler(
+        optimizer_G_recurrent, multiplier=8, total_epoch=4, after_scheduler=scheduler_cosine_recurrent)
 
-    optimizer_G_noshare = torch.optim.AdamW(filter(lambda p: p.requires_grad, G_network_noshare.parameters()),
+    optimizer_G_nonrecurrent = torch.optim.AdamW(filter(lambda p: p.requires_grad, G_network_nonrecurrent.parameters()),
                                     lr=args.lr, betas=(0.9, 0.9), weight_decay=1e-3)
-    scheduler_cosine_noshare = CosineAnnealingLR(optimizer_G_noshare, args.n_epochs)
-    scheduler_warmup_noshare = GradualWarmupScheduler(
-        optimizer_G_noshare, multiplier=8, total_epoch=4, after_scheduler=scheduler_cosine_noshare)
+    scheduler_cosine_nonrecurrent = CosineAnnealingLR(optimizer_G_nonrecurrent, args.n_epochs)
+    scheduler_warmup_nonrecurrent = GradualWarmupScheduler(
+        optimizer_G_nonrecurrent, multiplier=8, total_epoch=4, after_scheduler=scheduler_cosine_nonrecurrent)
 
     # Defining logging dirs
     timestamp = mutils.get_formatted_time()
