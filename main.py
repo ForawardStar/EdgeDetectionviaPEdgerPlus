@@ -117,7 +117,7 @@ def main():
                 val_img = val_batch['img'].float().to(device)
                 val_edge_gt = val_batch['edge'].float().to(device)
 
-                M_recurrent = W1_previous * torch.sigmoid(G_network_recurrent_bayesian1(img)[-1]) + W2_previous * torch.sigmoid(G_network_recurrent_bayesian2(img)[-1]) + W3_previous * torch.sigmoid(G_network_recurrent_bayesian3(img)[-1])
+                M_recurrent = W1_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian1(img)[-1]) + W2_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian2(img)[-1]) + W3_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian3(img)[-1])
                 M_nonrecurrent = W1_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian1(img)[-1]) + W2_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian2(img)[-1]) + W3_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian3(img)[-1])
 
                 constants = constants + torch.mean(val_edge_gt)
@@ -186,17 +186,17 @@ def main():
                 with torch.no_grad():
                     h, w = img.shape[2], img.shape[3]
 
-                    #mask_features_teacher    = G_network_teacher(img)[-1]
+                    #mask_features_recurrent_teacher    = G_network_teacher(img)[-1]
                     #mask_features_nonrecurrent    = G_network_teacher_nonrecurrent(img)[-1]
-                    mask_features_teacher = W1_previous * G_network_bayesian1(img)[-1] + W2_previous * G_network_bayesian2(img)[-1] + W3_previous * G_network_bayesian3(img)[-1]
+                    mask_features_recurrent_teacher = W1_recurrent_previous * G_network_recurrent_bayesian1(img)[-1] + W2_recurrent_previous * G_network_recurrent_bayesian2(img)[-1] + W3_recurrent_previous * G_network_recurrent_bayesian3(img)[-1]
                     mask_features_nonrecurrent_teacher = W1_nonrecurrent_previous * G_network_nonrecurrent_bayesian1(img)[-1] + W2_nonrecurrent_previous * G_network_nonrecurrent_bayesian2(img)[-1] + W3_nonrecurrent_previous * G_network_nonrecurrent_bayesian3(img)[-1]
  
-                    uncertainty = torch.abs(F.sigmoid(mask_features_teacher) - 0.5).detach()
+                    uncertainty_recurrent = torch.abs(F.sigmoid(mask_features_recurrent_teacher) - 0.5).detach()
                     uncertainty_nonrecurrent = torch.abs(F.sigmoid(mask_features_nonrecurrent_teacher) - 0.5).detach()
 
-                    weight = uncertainty / (uncertainty + uncertainty_nonrecurrent)
+                    weight = uncertainty_recurrent / (uncertainty_recurrent + uncertainty_nonrecurrent)
 
-                    res = F.sigmoid(mask_features_teacher * weight + mask_features_nonrecurrent_teacher * (1 - weight))
+                    res = F.sigmoid(mask_features_recurrent_teacher * weight + mask_features_nonrecurrent_teacher * (1 - weight))
                     
                     edge_gt_soft = edge_gt * (1 - dis_weight) + res * dis_weight
             else:
