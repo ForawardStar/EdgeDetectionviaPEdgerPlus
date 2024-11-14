@@ -288,39 +288,39 @@ if __name__ == '__main__':
     criterion = MyLoss().to(device)
 
     # Initialize student and teacher
-    G_network = Net_Recurrent().to(device)
-    G_network_teacher = Net_Recurrent().to(device)
-    G_network_noshare = Net_NonRecurrent().to(device)
-    G_network_teacher_noshare = Net_NonRecurrent().to(device)
+    G_network_recurrent = Net_Recurrent().to(device)
+    G_network_recurrent_teacher = Net_Recurrent().to(device)
+    G_network_nonrecurrent = Net_NonRecurrent().to(device)
+    G_network_nonrecurrent_teacher = Net_NonRecurrent().to(device)
 
     #Initialize Bayesian networks
-    G_network_bayesian1 = Net_Recurrent_bayesian().to(device)
-    G_network_bayesian2 = Net_Recurrent_bayesian().to(device)
-    G_network_bayesian3 = Net_Recurrent_bayesian().to(device)
+    G_network_recurrent_bayesian1 = Net_Recurrent_bayesian().to(device)
+    G_network_recurrent_bayesian2 = Net_Recurrent_bayesian().to(device)
+    G_network_recurrent_bayesian3 = Net_Recurrent_bayesian().to(device)
 
-    G_network_noshare_bayesian1 = Net_NonRecurrent_bayesian().to(device)
-    G_network_noshare_bayesian2 = Net_NonRecurrent_bayesian().to(device)
-    G_network_noshare_bayesian3 = Net_NonRecurrent_bayesian().to(device)
+    G_network_nonrecurrent_bayesian1 = Net_NonRecurrent_bayesian().to(device)
+    G_network_nonrecurrent_bayesian2 = Net_NonRecurrent_bayesian().to(device)
+    G_network_nonrecurrent_bayesian3 = Net_NonRecurrent_bayesian().to(device)
 
 
     # gradient stopping on momentum networks and Bayesian networks
-    for p in G_network_teacher.parameters():
+    for p in G_network_recurrent_teacher.parameters():
         p.requires_grad = False
-    for p in G_network_teacher_noshare.parameters():
-        p.requires_grad = False
-
-    for p in G_network_bayesian1.parameters():
-        p.requires_grad = False
-    for p in G_network_bayesian2.parameters():
-        p.requires_grad = False
-    for p in G_network_bayesian3.parameters():
+    for p in G_network_nonrecurrent_teacher.parameters():
         p.requires_grad = False
 
-    for p in G_network_noshare_bayesian1.parameters():
+    for p in G_network_recurrent_bayesian1.parameters():
         p.requires_grad = False
-    for p in G_network_noshare_bayesian2.parameters():
+    for p in G_network_recurrent_bayesian2.parameters():
         p.requires_grad = False
-    for p in G_network_noshare_bayesian3.parameters():
+    for p in G_network_recurrent_bayesian3.parameters():
+        p.requires_grad = False
+
+    for p in G_network_nonrecurrent_bayesian1.parameters():
+        p.requires_grad = False
+    for p in G_network_nonrecurrent_bayesian2.parameters():
+        p.requires_grad = False
+    for p in G_network_nonrecurrent_bayesian3.parameters():
         p.requires_grad = False
 
 
