@@ -18,7 +18,7 @@ Download the augmented BSDS and PASCAL VOC datasets from:
 
 https://pan.baidu.com/s/16bsUgTf5wmOzYqYNV26irQ?pwd=yh59 Extraction code: yh59
 
-https://pan.baidu.com/s/1BZIzfQ-feVYeU_8YX5oq7w?pwd=6jrp Extraction code: 6jrp
+https://pan.baidu.com/s/10bBqLxBOMQ3s2beVBlFMLw?pwd=sh7j Extraction code: sh7j
 
 Download the augmented NYUD dataset from:
 
