@@ -13,8 +13,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torch.autograd import Variable
 
-from models_noshare_ResNet50 import Guider_noshare_ResNet50
-from models_noshare_ResNet50 import Guider_noshare_ResNet50
+from models_nonrecurrent_ResNet50 import Net_NonRecurrent_ResNet50
 from test_datasets import *
 from utils import *
 
@@ -44,30 +43,24 @@ criterion = MyLoss()#.cuda()
 
 cuda = True if torch.cuda.is_available() else False
 
-G_network_noshare1 = Guider_noshare_ResNet50()
-G_network_noshare2 = Guider_noshare_ResNet50()
+G_network_nonrecurrent1 = Net_NonRecurrent_ResNet50()
+G_network_nonrecurrent2 = Net_NonRecurrent_ResNet50()
 
 if cuda:
-    G_network_noshare1 = G_network_noshare1.cuda()
-    G_network_noshare2 = G_network_noshare2.cuda()
+    G_network_nonrecurrent1 = G_network_nonrecurrent1.cuda()
+    G_network_nonrecurrent2 = G_network_nonrecurrent2.cuda()
 
-# G_network.eval()
 # Load pretrained models
 if opt.ckpt is not None:
     state_dict = torch.load(opt.ckpt)
 
-    #G_network_state_dict = state_dict["G_teacher"]
-    #G_network.load_state_dict(G_network_state_dict)
+    G_network_nonrecurrent1_state_dict = state_dict["G_teacher"]
+    G_network_nonrecurrent1.load_state_dict(G_network_nonrecurrent1_state_dict)
 
-    #G_network_noshare_state_dict = state_dict["G_teacher_noshare"]
-    #G_network_noshare.load_state_dict(G_network_noshare_state_dict)
-    G_network_state_dict = state_dict["G_teacher"]
-    G_network_noshare1.load_state_dict(G_network_state_dict)
+    G_network_nonrecurrent2_state_dict = state_dict["G_teacher_noshare"]
+    G_network_nonrecurrent2.load_state_dict(G_network_nonrecurrent2_state_dict)
 
-    G_network_noshare_state_dict = state_dict["G_teacher_noshare"]
-    G_network_noshare2.load_state_dict(G_network_noshare_state_dict)
-
-total_params = get_model_parm_nums(G_network_noshare1)
+total_params = get_model_parm_nums(G_network_nonrecurrent1)
 print("*****************************")
 print("total_params:  ", total_params)
 print("*****************************")
@@ -78,7 +71,6 @@ normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                          std=[0.229, 0.224, 0.225])
 # Image transformations
 transforms_ = [transforms.ToTensor(), normalize]
-#transforms_ = [transforms.ToTensor()]
 
 # Training data loader
 dataloader = DataLoader(ImageDataset("data", transforms_=transforms_, unaligned=True),
@@ -89,8 +81,8 @@ dataloader = DataLoader(ImageDataset("data", transforms_=transforms_, unaligned=
 prev_time = time.time()
 
 edge_path_formal = "VisualResults_ResNet50_ensemble_" + opt.ckpt.strip().strip('/').split('/')[-1]
-edge_path_formal1 = "VisualResults_ResNet50_noshare1_" + opt.ckpt.strip().strip('/').split('/')[-1]
-edge_path_formal2 = "VisualResults_ResNet50_noshare2_" + opt.ckpt.strip().strip('/').split('/')[-1]
+edge_path_formal1 = "VisualResults_ResNet50_nonrecurrent1_" + opt.ckpt.strip().strip('/').split('/')[-1]
+edge_path_formal2 = "VisualResults_ResNet50_nonrecurrent2_" + opt.ckpt.strip().strip('/').split('/')[-1]
 print(edge_path_formal)
 os.makedirs(edge_path_formal, exist_ok=True)
 os.makedirs(edge_path_formal1, exist_ok=True)
@@ -109,13 +101,13 @@ for epoch in range(opt.epoch, opt.n_epochs):
             input_image_05 = F.interpolate(input_image, size=(int(round(h*0.5, 0)), int(round(w*0.5, 0))), mode='bilinear')
             input_image_15 = F.interpolate(input_image, size=(int(round(h*1.5, 0)), int(round(w*1.5, 0))), mode='bilinear')
 
-            mask_features_05 = F.interpolate(G_network_noshare1(input_image_05)[-1], size=(h, w), mode='bilinear')
-            mask_features    = G_network_noshare1(input_image)[-1]
-            mask_features_15 = F.interpolate(G_network_noshare1(input_image_15)[-1], size=(h, w), mode='bilinear')
+            mask_features_05 = F.interpolate(G_network_nonrecurrent1(input_image_05)[-1], size=(h, w), mode='bilinear')
+            mask_features    = G_network_nonrecurrent1(input_image)[-1]
+            mask_features_15 = F.interpolate(G_network_nonrecurrent1(input_image_15)[-1], size=(h, w), mode='bilinear')
 
-            mask_features_noshare_05 = F.interpolate(G_network_noshare2(input_image_05)[-1], size=(h, w), mode='bilinear')
-            mask_features_noshare    = G_network_noshare2(input_image)[-1]
-            mask_features_noshare_15 = F.interpolate(G_network_noshare2(input_image_15)[-1], size=(h, w), mode='bilinear')
+            mask_features_noshare_05 = F.interpolate(G_network_nonrecurrent2(input_image_05)[-1], size=(h, w), mode='bilinear')
+            mask_features_noshare    = G_network_nonrecurrent2(input_image)[-1]
+            mask_features_noshare_15 = F.interpolate(G_network_nonrecurrent2(input_image_15)[-1], size=(h, w), mode='bilinear')
 
             uncertainty_05 = torch.abs(F.sigmoid(mask_features_05) - 0.5).detach()
             uncertainty_noshare_05 = torch.abs(F.sigmoid(mask_features_noshare_05) - 0.5).detach()
