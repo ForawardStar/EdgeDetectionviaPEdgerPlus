@@ -187,7 +187,7 @@ def main():
                     h, w = img.shape[2], img.shape[3]
 
                     #mask_features_recurrent_teacher    = G_network_teacher(img)[-1]
-                    #mask_features_nonrecurrent    = G_network_teacher_nonrecurrent(img)[-1]
+                    #mask_features_nonrecurrent    = G_network_nonrecurrent_teacher(img)[-1]
                     mask_features_recurrent_teacher = W1_recurrent_previous * G_network_recurrent_bayesian1(img)[-1] + W2_recurrent_previous * G_network_recurrent_bayesian2(img)[-1] + W3_recurrent_previous * G_network_recurrent_bayesian3(img)[-1]
                     mask_features_nonrecurrent_teacher = W1_nonrecurrent_previous * G_network_nonrecurrent_bayesian1(img)[-1] + W2_nonrecurrent_previous * G_network_nonrecurrent_bayesian2(img)[-1] + W3_nonrecurrent_previous * G_network_nonrecurrent_bayesian3(img)[-1]
  
@@ -233,8 +233,8 @@ def main():
             loss_nonrecurrent.backward()
 
             if (i + 1) % args.iter_size == 0:
-                optimizer_G.step()
-                optimizer_G.zero_grad()
+                optimizer_G_recurrent.step()
+                optimizer_G_recurrent.zero_grad()
 
                 optimizer_G_nonrecurrent.step()
                 optimizer_G_nonrecurrent.zero_grad()
@@ -248,24 +248,24 @@ def main():
 
             if global_step % args.sample_interval == 0:
                 with torch.no_grad():
-                    show = torch.cat([*edge_preds, edge_gt], dim=0).repeat(1, 3, 1, 1)
+                    show = torch.cat([*edge_preds_nonrecurrent, edge_gt], dim=0).repeat(1, 3, 1, 1)
                     show = torch.cat([show, img], dim=0)
                     saver.save_image(show, '%09d' % global_step, nrow=5)
 
             global_step += 1
 
-            del loss_recurrent, loss_nonrecurrent, img, edge_preds, edge_preds_nonrecurrent, edge_feats, edge_feats_nonrecurrent
+            del loss_recurrent, loss_nonrecurrent, img, edge_preds_recurrent, edge_preds_nonrecurrent, edge_feats_recurrent, edge_feats_nonrecurrent
 
         loss_recurrent_meter.reset()
         loss_nonrecurrent_meter.reset()
         if args.checkpoint_interval != -1 and epoch % args.checkpoint_interval == 0:
             # Save model checkpoints
-            save_checkpoint({'G': G_network, 'G_teacher': G_network_teacher, 'G_nonrecurrent': G_network_nonrecurrent, 'G_teacher_nonrecurrent': G_network_teacher_nonrecurrent},
-                            {'optimizer': optimizer_G, 'optimizer_nonrecurrent': optimizer_G_nonrecurrent},
-                            {'scheduler': scheduler_cosine, 'scheduler_warmup': scheduler_warmup, 'scheduler_nonrecurrent': scheduler_cosine_nonrecurrent, 'scheduler_warmup_nonrecurrent': scheduler_warmup_nonrecurrent},
+            save_checkpoint({'G_recurrent': G_network_recurrent, 'G_recurrent_teacher': G_network_recurrent_teacher, 'G_nonrecurrent': G_network_nonrecurrent, 'G_nonrecurrent_teacher': G_network_nonrecurrent_teacher},
+                            {'optimizer_recurrent': optimizer_G_recurrent, 'optimizer_nonrecurrent': optimizer_G_nonrecurrent},
+                            {'scheduler_recurrent': scheduler_cosine_recurrent, 'scheduler_warmup_recurrent': scheduler_warmup_recurrent, 'scheduler_nonrecurrent': scheduler_cosine_nonrecurrent, 'scheduler_warmup_nonrecurrent': scheduler_warmup_nonrecurrent},
                             'ckt', epoch, os.path.join(args.saved_path, 'weights'))
 
-        scheduler_warmup.step()
+        scheduler_warmup_recurrent.step()
         scheduler_warmup_nonrecurrent.step()
 
 
