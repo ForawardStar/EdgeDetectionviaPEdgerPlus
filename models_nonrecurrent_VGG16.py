@@ -62,7 +62,7 @@ class Net_NonRecurrent_VGG16(nn.Module):
                 '22': "relu4_3"
                 }
 
-        self.tail_mask_s2d1 = nn.Sequential(
+        self.tail_mask_c2f1 = nn.Sequential(
             nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
             #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
@@ -72,7 +72,7 @@ class Net_NonRecurrent_VGG16(nn.Module):
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
-        self.tail_mask_d2s1 = nn.Sequential(
+        self.tail_mask_f2c1 = nn.Sequential(
             nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
             #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
@@ -82,7 +82,7 @@ class Net_NonRecurrent_VGG16(nn.Module):
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
-        self.tail_mask_s2d2 = nn.Sequential(
+        self.tail_mask_c2f2 = nn.Sequential(
             nn.Conv2d(128, 32, kernel_size=3, stride=1, padding=1),
             #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
@@ -92,7 +92,7 @@ class Net_NonRecurrent_VGG16(nn.Module):
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
-        self.tail_mask_d2s2 = nn.Sequential(
+        self.tail_mask_f2c2 = nn.Sequential(
             nn.Conv2d(128, 32, kernel_size=3, stride=1, padding=1),
             #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
@@ -102,7 +102,7 @@ class Net_NonRecurrent_VGG16(nn.Module):
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
-        self.tail_mask_s2d3 = nn.Sequential(
+        self.tail_mask_c2f3 = nn.Sequential(
             nn.Conv2d(256, 32, kernel_size=3, stride=1, padding=1),
             #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
@@ -112,7 +112,7 @@ class Net_NonRecurrent_VGG16(nn.Module):
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
-        self.tail_mask_d2s3 = nn.Sequential(
+        self.tail_mask_f2c3 = nn.Sequential(
             nn.Conv2d(256, 32, kernel_size=3, stride=1, padding=1),
             #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
@@ -122,7 +122,7 @@ class Net_NonRecurrent_VGG16(nn.Module):
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
-        self.tail_mask_s2d4 = nn.Sequential(
+        self.tail_mask_c2f4 = nn.Sequential(
             nn.Conv2d(512, 32, kernel_size=3, stride=1, padding=1),
             #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
@@ -132,7 +132,7 @@ class Net_NonRecurrent_VGG16(nn.Module):
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
-        self.tail_mask_d2s4 = nn.Sequential(
+        self.tail_mask_f2c4 = nn.Sequential(
             nn.Conv2d(512, 32, kernel_size=3, stride=1, padding=1),
             #nn.BatchNorm2d(32,track_running_stats=False),
             nn.LeakyReLU(0.2, inplace=True),
@@ -163,52 +163,52 @@ class Net_NonRecurrent_VGG16(nn.Module):
         for step in range(4):
             state_curr = vgg16_outs[step]
             if step == 0:
-                s2d_features1 = self.tail_mask_s2d1(state_curr)
-                d2s_features1 = self.tail_mask_d2s1(state_curr)
+                c2f_features1 = self.tail_mask_c2f1(state_curr)
+                f2c_features1 = self.tail_mask_f2c1(state_curr)
                 
-                mask_features.append(s2d_features1)
+                mask_features.append(c2f_features1)
                 single_features.append(
-                    F.interpolate(d2s_features1, size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear'))
+                    F.interpolate(f2c_features1, size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear'))
                 
             elif step == 1:
-                s2d_features2 = self.tail_mask_s2d2(state_curr)
-                d2s_features2 = self.tail_mask_d2s2(state_curr)
+                c2f_features2 = self.tail_mask_c2f2(state_curr)
+                f2c_features2 = self.tail_mask_f2c2(state_curr)
                 
-                features2 = F.max_pool2d(s2d_features1, kernel_size=2, stride=2, padding=0).detach() + s2d_features2
+                features2 = F.max_pool2d(c2f_features1, kernel_size=2, stride=2, padding=0).detach() + c2f_features2
                 
                 mask_features.append(features2)
                 single_features.append(
-                    F.interpolate(d2s_features2, size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear'))
+                    F.interpolate(f2c_features2, size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear'))
             elif step == 2:
-                s2d_features3 = self.tail_mask_s2d3(state_curr)
-                d2s_features3 = self.tail_mask_d2s3(state_curr)
+                c2f_features3 = self.tail_mask_c2f3(state_curr)
+                f2c_features3 = self.tail_mask_f2c3(state_curr)
                 
-                features3 = F.max_pool2d(features2, kernel_size=2, stride=2, padding=0).detach() + s2d_features3
+                features3 = F.max_pool2d(features2, kernel_size=2, stride=2, padding=0).detach() + c2f_features3
 
                 mask_features.append(features3)
                 single_features.append(
-                    F.interpolate(d2s_features3, size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear'))
+                    F.interpolate(f2c_features3, size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear'))
             elif step == 3:
-                s2d_features4 = self.tail_mask_s2d4(state_curr)
-                d2s_features4 = self.tail_mask_d2s4(state_curr)
+                c2f_features4 = self.tail_mask_c2f4(state_curr)
+                f2c_features4 = self.tail_mask_f2c4(state_curr)
                 
-                features4 = F.max_pool2d(features3, kernel_size=2, stride=2, padding=0).detach() + s2d_features4
+                features4 = F.max_pool2d(features3, kernel_size=2, stride=2, padding=0).detach() + c2f_features4
 
                 mask_features.append(features4)
                 single_features.append(
-                    F.interpolate(d2s_features4, size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear'))
+                    F.interpolate(f2c_features4, size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear'))
 
-        s2d_1 = mask_features[0]
-        s2d_2 = F.interpolate(mask_features[1], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
-        s2d_3 = F.interpolate(mask_features[2], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
-        s2d_4 = F.interpolate(mask_features[3], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
+        c2f_1 = mask_features[0]
+        c2f_2 = F.interpolate(mask_features[1], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
+        c2f_3 = F.interpolate(mask_features[2], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
+        c2f_4 = F.interpolate(mask_features[3], size=(input_curr.shape[2], input_curr.shape[3]), mode='bilinear')
 
-        d2s_1 = single_features[0] + single_features[1].detach() + single_features[2].detach() + single_features[
+        f2c_1 = single_features[0] + single_features[1].detach() + single_features[2].detach() + single_features[
             3].detach()
-        d2s_2 = single_features[1] + single_features[2].detach() + single_features[3].detach()
-        d2s_3 = single_features[2] + single_features[3].detach()
-        d2s_4 = single_features[3]
+        f2c_2 = single_features[1] + single_features[2].detach() + single_features[3].detach()
+        f2c_3 = single_features[2] + single_features[3].detach()
+        f2c_4 = single_features[3]
 
-        fuse = self.score_final(torch.cat([s2d_1, s2d_2, s2d_3, s2d_4, d2s_1, d2s_2, d2s_3, d2s_4], dim=1))
+        fuse = self.score_final(torch.cat([c2f_1, c2f_2, c2f_3, c2f_4, f2c_1, f2c_2, f2c_3, f2c_4], dim=1))
 
-        return [s2d_1, s2d_2, s2d_3, s2d_4, d2s_1, d2s_2, d2s_3, d2s_4, fuse]
+        return [c2f_1, c2f_2, c2f_3, c2f_4, f2c_1, f2c_2, f2c_3, f2c_4, fuse]
