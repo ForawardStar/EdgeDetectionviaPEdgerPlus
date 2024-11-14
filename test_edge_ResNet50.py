@@ -132,10 +132,7 @@ for epoch in range(opt.epoch, opt.n_epochs):
             res1 = torch.exp(mask_features.detach() - 0.5) / (torch.exp(mask_features.detach() - 0.5) + torch.exp(0.5 - mask_features.detach()))
             res2 = torch.exp(mask_features_noshare.detach() - 0.5) / (torch.exp(mask_features_noshare.detach() - 0.5) + torch.exp(0.5 - mask_features_noshare.detach()))
 
-        # print("head.norm.running_mean[0] = ", G_network.state_dict()["head.norm.running_mean"][0].item(), end=' ')
-        #outputs = [torch.sigmoid(r) for r in outputs]
-
-        #res = torch.exp(mask_features.detach() - 0.5) / (torch.exp(mask_features.detach() - 0.5) + torch.exp(0.5 - mask_features.detach()))
+       
         print(", image_size = {}  , filename = {}".format(res.shape, file_name))
         save_image(res, edge_path_formal + "/" + file_name.split(".")[0] + ".png", nrow=1,
                    normalize=False)
@@ -143,8 +140,7 @@ for epoch in range(opt.epoch, opt.n_epochs):
                    normalize=False)
         save_image(res2, edge_path_formal2 + "/" + file_name.split(".")[0] + ".png", nrow=1,
                    normalize=False)
-        #print("state_features[0]:{}  ,  state_features[1]:{}  ,  state_features[2]:{}  ,  state_features[3]:{}  ,  state_features[4]:{}".format(state_features[0].shape, state_features[1].shape, state_features[2].shape, state_features[3].shape, state_features[4].shape))
-
+        
         # --------------
         #  Log Progress
         # --------------
