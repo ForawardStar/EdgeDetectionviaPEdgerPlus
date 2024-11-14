@@ -36,70 +36,70 @@ parser.add_argument('--saved_path', type=str, default='logs/')
 # ----------
 def main():
     global global_step
-    global W1_previous
-    global W2_previous
-    global W3_previous
+    global W1_recurrent_previous
+    global W2_recurrent_previous
+    global W3_recurrent_previous
 
-    global W1_noshare_previous
-    global W2_noshare_previous
-    global W3_noshare_previous
+    global W1_nonrecurrent_previous
+    global W2_nonrecurrent_previous
+    global W3_nonrecurrent_previous
 
 
     for epoch in range(args.epoch, args.n_epochs):
         if epoch >= 2:
-            state_st = G_network.state_dict()
-            state_t = G_network_teacher.state_dict()
+            state_st = G_network_recurrent.state_dict()
+            state_t = G_network_recurrent_teacher.state_dict()
             for k, v in state_t.items():
                 state_t[k] = (state_t[k] + state_st[k]) * 0.5
-            G_network_teacher.load_state_dict(state_t)
+            G_network_recurrent_teacher.load_state_dict(state_t)
 
-            state_st_noshare = G_network_noshare.state_dict()
-            state_t_noshare = G_network_teacher_noshare.state_dict()
-            for k, v in state_t_noshare.items():
-                state_t_noshare[k] = (state_t_noshare[k] + state_st_noshare[k]) * 0.5
-            G_network_teacher_noshare.load_state_dict(state_t_noshare)
+            state_st_nonrecurrent = G_network_nonrecurrent.state_dict()
+            state_t_nonrecurrent = G_network_nonrecurrent_teacher.state_dict()
+            for k, v in state_t_nonrecurrent.items():
+                state_t_nonrecurrent[k] = (state_t_nonrecurrent[k] + state_st_nonrecurrent[k]) * 0.5
+            G_network_nonrecurrent_teacher.load_state_dict(state_t_nonrecurrent)
 
         elif epoch == 1:
-            G_network_teacher.load_state_dict(G_network.state_dict())
+            G_network_recurrent_teacher.load_state_dict(G_network_recurrent.state_dict())
 
-            G_network_teacher_noshare.load_state_dict(G_network_noshare.state_dict())
+            G_network_nonrecurrent_teacher.load_state_dict(G_network_nonrecurrent.state_dict())
 
         if epoch >= 1:
             # Update the parameters of Bayesian Networks
-            state_t = G_network_teacher.state_dict()
+            state_t = G_network_recurrent_teacher.state_dict()
 
-            state_b1 = G_network_bayesian1.state_dict()
+            state_b1 = G_network_recurrent_bayesian1.state_dict()
             for k, v in state_t.items():
                 state_b1[k] = state_t[k]
-            G_network_bayesian1.load_state_dict(state_b1)
+            G_network_recurrent_bayesian1.load_state_dict(state_b1)
 
-            state_b2 = G_network_bayesian2.state_dict()
+            state_b2 = G_network_recurrent_bayesian2.state_dict()
             for k, v in state_t.items():
                 state_b2[k] = state_t[k]
-            G_network_bayesian2.load_state_dict(state_b2)
+            G_network_recurrent_bayesian2.load_state_dict(state_b2)
 
-            state_b3 = G_network_bayesian3.state_dict()
+            state_b3 = G_network_recurrent_bayesian3.state_dict()
             for k, v in state_t.items():
                 state_b3[k] = state_t[k]
-            G_network_bayesian3.load_state_dict(state_b3)
+            G_network_recurrent_bayesian3.load_state_dict(state_b3)
 
             ##################################################################333
-            state_t_noshare = G_network_teacher_noshare.state_dict()
+            state_t_nonrecurrent = G_network_nonrecurrent_teacher.state_dict()
 
-            state_b1_noshare = G_network_noshare_bayesian1.state_dict()
-            for k, v in state_t_noshare.items():
-                state_b1_noshare[k] = state_t_noshare[k]
-            G_network_noshare_bayesian1.load_state_dict(state_b1_noshare)
+            state_b1_nonrecurrent = G_network_nonrecurrent_bayesian1.state_dict()
+            for k, v in state_t_nonrecurrent.items():
+                state_b1_nonrecurrent[k] = state_t_nonrecurrent[k]
+            G_network_nonrecurrent_bayesian1.load_state_dict(state_b1_nonrecurrent)
 
-            state_b2_noshare = G_network_noshare_bayesian2.state_dict()
-            for k, v in state_t_noshare.items():
-                state_b2_noshare[k] = state_t_noshare[k]
-            G_network_noshare_bayesian2.load_state_dict(state_b2_noshare)
+            state_b2_nonrecurrent = G_network_nonrecurrent_bayesian2.state_dict()
+            for k, v in state_t_nonrecurrent.items():
+                state_b2_nonrecurrent[k] = state_t_nonrecurrent[k]
+            G_network_nonrecurrent_bayesian2.load_state_dict(state_b2_nonrecurrent)
 
-            state_b3_noshare = G_network_noshare_bayesian3.state_dict()
-            for k, v in state_t_noshare.items():
-                state_b3_noshare[k] = state_t_noshare[k]
-            G_network_noshare_bayesian3.load_state_dict(state_b3_noshare)
+            state_b3_nonrecurrent = G_network_nonrecurrent_bayesian3.state_dict()
+            for k, v in state_t_nonrecurrent.items():
+                state_b3_nonrecurrent[k] = state_t_nonrecurrent[k]
+            G_network_nonrecurrent_bayesian3.load_state_dict(state_b3_nonrecurrent)
       
            
             print("Finish sampling parameters")
@@ -110,15 +110,15 @@ def main():
             predictions1 = 0.0
             predictions2 = 0.0
             predictions3 = 0.0
-            predictions_noshare1 = 0.0
-            predictions_noshare2 = 0.0
-            predictions_noshare3 = 0.0
+            predictions_nonrecurrent1 = 0.0
+            predictions_nonrecurrent2 = 0.0
+            predictions_nonrecurrent3 = 0.0
             for i, val_batch in enumerate(bar_val):
                 val_img = val_batch['img'].float().to(device)
                 val_edge_gt = val_batch['edge'].float().to(device)
 
                 M = W1_previous * torch.sigmoid(G_network_bayesian1(img)[-1]) + W2_previous * torch.sigmoid(G_network_bayesian2(img)[-1]) + W3_previous * torch.sigmoid(G_network_bayesian3(img)[-1])
-                M_noshare = W1_noshare_previous * torch.sigmoid(G_network_noshare_bayesian1(img)[-1]) + W2_noshare_previous * torch.sigmoid(G_network_noshare_bayesian2(img)[-1]) + W3_noshare_previous * torch.sigmoid(G_network_noshare_bayesian3(img)[-1])
+                M_nonrecurrent = W1_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian1(img)[-1]) + W2_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian2(img)[-1]) + W3_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian3(img)[-1])
 
                 constants = constants + torch.mean(val_edge_gt)
 
@@ -126,17 +126,17 @@ def main():
                 variables2 = torch.mean(torch.sigmoid(G_network_bayesian2(val_img)[-1]) * torch.abs(val_edge_gt / M  - (1 - val_edge_gt) / (1 - M)))
                 variables3 = torch.mean(torch.sigmoid(G_network_bayesian3(val_img)[-1]) * torch.abs(val_edge_gt / M  - (1 - val_edge_gt) / (1 - M)))
 
-                variables1_noshare = torch.mean(torch.sigmoid(G_network_noshare_bayesian1(val_img)[-1]) * torch.abs(val_edge_gt / M_noshare  - (1 - val_edge_gt) / (1 - M_noshare)))
-                variables2_noshare = torch.mean(torch.sigmoid(G_network_noshare_bayesian2(val_img)[-1]) * torch.abs(val_edge_gt / M_noshare  - (1 - val_edge_gt) / (1 - M_noshare)))
-                variables3_noshare = torch.mean(torch.sigmoid(G_network_noshare_bayesian3(val_img)[-1]) * torch.abs(val_edge_gt / M_noshare  - (1 - val_edge_gt) / (1 - M_noshare)))
+                variables1_nonrecurrent = torch.mean(torch.sigmoid(G_network_nonrecurrent_bayesian1(val_img)[-1]) * torch.abs(val_edge_gt / M_nonrecurrent  - (1 - val_edge_gt) / (1 - M_nonrecurrent)))
+                variables2_nonrecurrent = torch.mean(torch.sigmoid(G_network_nonrecurrent_bayesian2(val_img)[-1]) * torch.abs(val_edge_gt / M_nonrecurrent  - (1 - val_edge_gt) / (1 - M_nonrecurrent)))
+                variables3_nonrecurrent = torch.mean(torch.sigmoid(G_network_nonrecurrent_bayesian3(val_img)[-1]) * torch.abs(val_edge_gt / M_nonrecurrent  - (1 - val_edge_gt) / (1 - M_nonrecurrent)))
 
                 predictions1 = predictions1 + variables1
                 predictions2 = predictions2 + variables2
                 predictions3 = predictions3 + variables3
 
-                predictions_noshare1 = predictions1 + variables1_noshare
-                predictions_noshare2 = predictions2 + variables2_noshare
-                predictions_noshare3 = predictions3 + variables3_noshare
+                predictions_nonrecurrent1 = predictions1 + variables1_nonrecurrent
+                predictions_nonrecurrent2 = predictions2 + variables2_nonrecurrent
+                predictions_nonrecurrent3 = predictions3 + variables3_nonrecurrent
             
             constants = val_length * 0.5 / constants
             
@@ -145,35 +145,35 @@ def main():
             W2 = constants * predictions2
             W3 = constants * predictions3
 
-            W1_noshare = constants * predictions_noshare1
-            W2_noshare = constants * predictions_noshare2
-            W3_noshare = constants * predictions_noshare3
+            W1_nonrecurrent = constants * predictions_nonrecurrent1
+            W2_nonrecurrent = constants * predictions_nonrecurrent2
+            W3_nonrecurrent = constants * predictions_nonrecurrent3
 
             _W1 = W1 / (W1 + W2 + W3)
             _W2 = W2 / (W1 + W2 + W3)
             _W3 = W3 / (W1 + W2 + W3)
 
-            _W1_noshare = W1_noshare / (W1_noshare + W2_noshare + W3_noshare)
-            _W2_noshare = W2_noshare / (W1_noshare + W2_noshare + W3_noshare)
-            _W3_noshare = W3_noshare / (W1_noshare + W2_noshare + W3_noshare)
+            _W1_nonrecurrent = W1_nonrecurrent / (W1_nonrecurrent + W2_nonrecurrent + W3_nonrecurrent)
+            _W2_nonrecurrent = W2_nonrecurrent / (W1_nonrecurrent + W2_nonrecurrent + W3_nonrecurrent)
+            _W3_nonrecurrent = W3_nonrecurrent / (W1_nonrecurrent + W2_nonrecurrent + W3_nonrecurrent)
 
             W1_previous = _W1
             W2_previous = _W2
             W3_previous = _W3
 
-            W1_noshare_previous = _W1_noshare
-            W2_noshare_previous = _W2_noshare
-            W3_noshare_previous = _W3_noshare
+            W1_nonrecurrent_previous = _W1_nonrecurrent
+            W2_nonrecurrent_previous = _W2_nonrecurrent
+            W3_nonrecurrent_previous = _W3_nonrecurrent
 
             
-            print("Finish calculating weights of every parameter samplings. _W1:{}  ,  _W2:{}  ,  _W3:{}  ,  _W1_noshare:{}  ,  _W2_noshare:{}  ,  _W3_noshare:{}".format(_W1,_W2,_W3,_W1_noshare,_W2_noshare,_W3_noshare))
+            print("Finish calculating weights of every parameter samplings. _W1:{}  ,  _W2:{}  ,  _W3:{}  ,  _W1_nonrecurrent:{}  ,  _W2_nonrecurrent:{}  ,  _W3_nonrecurrent:{}".format(_W1,_W2,_W3,_W1_nonrecurrent,_W2_nonrecurrent,_W3_nonrecurrent))
 
 
 
         dis_weight = 0.8 * float(epoch) / float(args.n_epochs)
 
         loss_meter = AverageMeters()
-        loss_noshare_meter = AverageMeters()
+        loss_nonrecurrent_meter = AverageMeters()
         bar = tqdm.tqdm(dataloader, disable=True)
         saver.base_url = os.path.join(args.saved_path, 'results')
 
@@ -190,16 +190,16 @@ def main():
                     h, w = img.shape[2], img.shape[3]
 
                     #mask_features_teacher    = G_network_teacher(img)[-1]
-                    #mask_features_noshare    = G_network_teacher_noshare(img)[-1]
+                    #mask_features_nonrecurrent    = G_network_teacher_nonrecurrent(img)[-1]
                     mask_features_teacher = W1_previous * G_network_bayesian1(val_img)[-1] + W2_previous * G_network_bayesian2(val_img)[-1] + W3_previous * G_network_bayesian3(val_img)[-1]
-                    mask_features_noshare_teacher = W1_noshare_previous * G_network_noshare_bayesian1(val_img)[-1] + W2_noshare_previous * G_network_noshare_bayesian2(val_img)[-1] + W3_noshare_previous * G_network_noshare_bayesian3(val_img)[-1]
+                    mask_features_nonrecurrent_teacher = W1_nonrecurrent_previous * G_network_nonrecurrent_bayesian1(val_img)[-1] + W2_nonrecurrent_previous * G_network_nonrecurrent_bayesian2(val_img)[-1] + W3_nonrecurrent_previous * G_network_nonrecurrent_bayesian3(val_img)[-1]
  
                     uncertainty = torch.abs(F.sigmoid(mask_features_teacher) - 0.5).detach()
-                    uncertainty_noshare = torch.abs(F.sigmoid(mask_features_noshare_teacher) - 0.5).detach()
+                    uncertainty_nonrecurrent = torch.abs(F.sigmoid(mask_features_nonrecurrent_teacher) - 0.5).detach()
 
-                    weight = uncertainty / (uncertainty + uncertainty_noshare)
+                    weight = uncertainty / (uncertainty + uncertainty_nonrecurrent)
 
-                    res = F.sigmoid(mask_features_teacher * weight + mask_features_noshare_teacher * (1 - weight))
+                    res = F.sigmoid(mask_features_teacher * weight + mask_features_nonrecurrent_teacher * (1 - weight))
                     
                     edge_gt_soft = edge_gt * (1 - dis_weight) + res * dis_weight
             else:
@@ -222,31 +222,31 @@ def main():
             loss = loss / args.iter_size
             loss.backward()
 
-            edge_feats_noshare = G_network_noshare(img)
-            edge_preds_noshare = [torch.sigmoid(r) for r in edge_feats_noshare]
+            edge_feats_nonrecurrent = G_network_nonrecurrent(img)
+            edge_preds_nonrecurrent = [torch.sigmoid(r) for r in edge_feats_nonrecurrent]
 
             # Identity loss
-            loss_noshare, loss_noshare_items = criterion(edge_preds_noshare, edge_gt, edge_gt_soft)
+            loss_nonrecurrent, loss_nonrecurrent_items = criterion(edge_preds_nonrecurrent, edge_gt, edge_gt_soft)
 
-            if torch.isnan(loss_noshare):
+            if torch.isnan(loss_nonrecurrent):
                 saver.save_image(img, './nan_im')
                 saver.save_image(edge_gt, './nan_edge_gt')
                 exit(0)
-            loss_noshare = loss_noshare / args.iter_size
-            loss_noshare.backward()
+            loss_nonrecurrent = loss_nonrecurrent / args.iter_size
+            loss_nonrecurrent.backward()
 
             if (i + 1) % args.iter_size == 0:
                 optimizer_G.step()
                 optimizer_G.zero_grad()
 
-                optimizer_G_noshare.step()
-                optimizer_G_noshare.zero_grad()
+                optimizer_G_nonrecurrent.step()
+                optimizer_G_nonrecurrent.zero_grad()
 
             loss_meter.update(loss_items)
-            loss_noshare_meter.update(loss_noshare_items)
+            loss_nonrecurrent_meter.update(loss_nonrecurrent_items)
 
             if global_step % args.log_interval == 0:
-                print('\r[Epoch %d/%d, Iter: %d/%d]: %s, %s' % (epoch, args.n_epochs, i, len(bar), loss_meter, loss_noshare_meter), end="")
+                print('\r[Epoch %d/%d, Iter: %d/%d]: %s, %s' % (epoch, args.n_epochs, i, len(bar), loss_meter, loss_nonrecurrent_meter), end="")
                 write_loss(writer, 'train', loss_meter, global_step)
 
             if global_step % args.sample_interval == 0:
@@ -257,19 +257,19 @@ def main():
 
             global_step += 1
 
-            del loss, loss_noshare, img, edge_preds, edge_preds_noshare, edge_feats, edge_feats_noshare
+            del loss, loss_nonrecurrent, img, edge_preds, edge_preds_nonrecurrent, edge_feats, edge_feats_nonrecurrent
 
         loss_meter.reset()
-        loss_noshare_meter.reset()
+        loss_nonrecurrent_meter.reset()
         if args.checkpoint_interval != -1 and epoch % args.checkpoint_interval == 0:
             # Save model checkpoints
-            save_checkpoint({'G': G_network, 'G_teacher': G_network_teacher, 'G_noshare': G_network_noshare, 'G_teacher_noshare': G_network_teacher_noshare},
-                            {'optimizer': optimizer_G, 'optimizer_noshare': optimizer_G_noshare},
-                            {'scheduler': scheduler_cosine, 'scheduler_warmup': scheduler_warmup, 'scheduler_noshare': scheduler_cosine_noshare, 'scheduler_warmup_noshare': scheduler_warmup_noshare},
+            save_checkpoint({'G': G_network, 'G_teacher': G_network_teacher, 'G_nonrecurrent': G_network_nonrecurrent, 'G_teacher_nonrecurrent': G_network_teacher_nonrecurrent},
+                            {'optimizer': optimizer_G, 'optimizer_nonrecurrent': optimizer_G_nonrecurrent},
+                            {'scheduler': scheduler_cosine, 'scheduler_warmup': scheduler_warmup, 'scheduler_nonrecurrent': scheduler_cosine_nonrecurrent, 'scheduler_warmup_nonrecurrent': scheduler_warmup_nonrecurrent},
                             'ckt', epoch, os.path.join(args.saved_path, 'weights'))
 
         scheduler_warmup.step()
-        scheduler_warmup_noshare.step()
+        scheduler_warmup_nonrecurrent.step()
 
 
 if __name__ == '__main__':
