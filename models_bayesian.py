@@ -3,6 +3,25 @@ import torch.nn.functional as F
 import torch
 import time
 
+class SELayer(nn.Module):
+    def __init__(self, in_channel, out_channel, reduction=16):
+        super(SELayer, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+
+        self.fc = nn.Sequential(
+            nn.Linear(in_channel, in_channel // reduction, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Linear(in_channel // reduction, out_channel, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        b, c, _, _ = x.size()
+
+        y = self.avg_pool(x).view(b, c)
+        y = self.fc(y).view(b, c, 1, 1)
+        return x * y.expand_as(x)
+
 class ConvBlock(nn.Sequential):
     def __init__(self, in_channel, out_channel, ker_size, padd, stride):
         super(ConvBlock, self).__init__()
@@ -45,9 +64,9 @@ class InvertedResidual(nn.Module):
         return x + self.conv(x)
 
 
-class Guider_stu_bayesian(nn.Module):
+class Net_Recurrent_bayesian(nn.Module):
     def __init__(self, in_channels=3, out_channels=3):
-        super(Guider_stu_bayesian, self).__init__()
+        super(Net_Recurrent_bayesian, self).__init__()
         self.is_cuda = torch.cuda.is_available()
         self.nfc = 32
         self.min_nfc = 32
@@ -72,6 +91,7 @@ class Guider_stu_bayesian(nn.Module):
             InvertedResidual(80, 8),
             InvertedResidual(80, 8),
             InvertedResidual(80, 1),
+            SELayer(80, 80),
             nn.Dropout(0.3),
         )
 
