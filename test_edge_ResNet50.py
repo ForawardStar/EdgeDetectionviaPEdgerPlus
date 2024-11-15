@@ -54,11 +54,14 @@ if cuda:
 if opt.ckpt is not None:
     state_dict = torch.load(opt.ckpt)
 
-    G_network_nonrecurrent1_state_dict = state_dict["G_teacher"]
-    G_network_nonrecurrent1.load_state_dict(G_network_nonrecurrent1_state_dict)
+    G_network_nonrecurrent1_state_dict1_old = state_dict["G_teacher"]
+    G_network_nonrecurrent1_state_dict1 = {k.replace("s2d", "c2f").replace("d2s", "f2c"): v for k, v in G_network_nonrecurrent1_state_dict1_old.items()}
+    G_network_nonrecurrent1.load_state_dict(G_network_nonrecurrent1_state_dict1)
 
-    G_network_nonrecurrent2_state_dict = state_dict["G_teacher_noshare"]
-    G_network_nonrecurrent2.load_state_dict(G_network_nonrecurrent2_state_dict)
+    G_network_nonrecurrent2_state_dict2_old = state_dict["G_teacher_noshare"]
+    G_network_nonrecurrent2_state_dict2 = {k.replace("s2d", "c2f").replace("d2s", "f2c"): v for k, v in G_network_nonrecurrent2_state_dict2_old.items()}
+    G_network_nonrecurrent2.load_state_dict(G_network_nonrecurrent2_state_dict2)
+
 
 total_params = get_model_parm_nums(G_network_nonrecurrent1)
 print("*****************************")
