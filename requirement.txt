@@ -1,4 +1,3 @@
-kiwisolver==1.4.4
 kornia==0.5.8
 lightning==2.1.3
 lightning-utilities==0.10.1
@@ -13,16 +12,12 @@ pytorch-lightning==2.1.3
 scikit-image==0.19.3
 scikit-learn==1.2.2
 scipy==1.9.3
-setuptools==59.5.0
 tensorboard==2.12.1
 tensorboard-data-server==0.7.0
 tensorboard-plugin-wit==1.8.1
 tensorboardX==2.2
 thop==0.1.1.post2305252222
-threadpoolctl==3.1.0
-tifffile==2020.10.1
 timm==0.8.21.dev0
-toolz==0.12.0
 torch==1.11.0+cu113
 torch-encoding==0.5.1+152397c
 torchaudio==0.11.0+cu113
