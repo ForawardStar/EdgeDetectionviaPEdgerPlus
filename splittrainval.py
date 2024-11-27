@@ -4,9 +4,9 @@ import numpy as np
 import math
 import random
 
-f_read = open("bsds_pascal_train_pair.lst", "r")
-f_train = open("bsds_pascal_train_pair_trainset.lst", "w")
-f_val = open("bsds_pascal_train_pair_valset.lst", "w")
+f_read = open("bsds_pascal_train_pair_aug.lst", "r")
+f_train = open("bsds_pascal_train_split_pair_aug.lst", "w")
+f_val = open("bsds_pascal_val_split_pair_aug.lst", "w")
 
 
 contents = f_read.readlines()
@@ -25,6 +25,8 @@ for content in contents:
 
 f_val.writelines(val_contents)
 f_train.writelines(train_contents)
+
+f_read.close()
 f_val.close()
 f_train.close()
 

@@ -20,11 +20,8 @@ https://pan.baidu.com/s/16bsUgTf5wmOzYqYNV26irQ?pwd=yh59 Extraction code: yh59
 
 https://pan.baidu.com/s/10bBqLxBOMQ3s2beVBlFMLw?pwd=sh7j Extraction code: sh7j
 
-Download the augmented NYUD dataset from:
 
-https://pan.baidu.com/s/1J5z6235tv1xef3HXTaqnKg Extraction Code:t2ce
-
-After downloading the datasets, put them in 'data/' folder.
+After downloading the datasets, put them in your data folder.
 
 # Training
 Before starting the training process, the training and validation set should be split through runing:
@@ -36,11 +33,10 @@ If you want to train our PEdger++, change the data path of training images, and 
 ```python main.py```
 
 # Testing
-If you want to test our pre-trained model, put the test images into the 'data/test/' folder, and then run:
+If you want to test the pre-trained model, put the test images into the your test data folder, and put the trained checkpoints into your checkpoint folder. Then, run:
 
 ```python test_edge.py```
 
-Our pre-trained models of PEdger++ without any pre-training, have already been stored in the "models/" folder, i.e., models/checkpoint.pth, and the relative path to the 'models/checkpoint.pth' is specified in the "test_edge.py" file. Simply running 'test_edge.py' can take the images in "data/test/" folder as inputs, and output the detected edges.
 
 If you want to evaluate the performance of PEdger++ w/ VGG16 and PEdger++ w/ ResNet50, please run:
 
@@ -50,12 +46,6 @@ If you want to evaluate the performance of PEdger++ w/ VGG16 and PEdger++ w/ Res
 
 ```python test_edge_ResNet50.py```
 
-Before running 'test_edge_VGG16.py' and 'test_edge_ResNet50.py', the pre-trained models should be downloaded from the link: 
- https://pan.baidu.com/s/129W63l5nyYMZnE_8-0C9lA?pwd=dcfv Extraction Code: dcfv 
-
-
-
-Our pre-computed edge maps are available at this link: https://pan.baidu.com/s/1TgyJ84oqJVASpA59jhbTeQ?pwd=1ia4
 
 # Evaluation
 The matlab code for evaluation can be downloaded in https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/resources.html. Before evaluation, the non-maximum suppression should be done through running ``edge_nms.m" in https://github.com/yun-liu/RCF.

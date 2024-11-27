@@ -5,7 +5,6 @@ import os
 import torch
 from torch.utils.data import Dataset
 from PIL import Image
-from skimage import io, color
 import torchvision.transforms as transforms
 
 class ImageDataset(Dataset):
@@ -15,7 +14,7 @@ class ImageDataset(Dataset):
         self.root = root
 
         
-        self.filelist = os.listdir(self.root+'/test/')
+        self.filelist = os.listdir(self.root+'/your/data/folder/')
         # with open(self.filepath, 'r') as f:
         #     self.filelist = f.readlines()
 
@@ -23,7 +22,7 @@ class ImageDataset(Dataset):
         img_file = self.filelist[index].rstrip()
 
         #filename = self.files_img[index % len(self.files_img)] 
-        img_path = self.root + '/test/' + img_file
+        img_path = self.root + '/your/data/folder/' + img_file
         item_img = self.transform(Image.open(img_path).convert("RGB"))
 
         img_file_split = img_file.split("/")

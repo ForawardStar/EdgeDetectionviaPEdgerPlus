@@ -22,13 +22,8 @@ import torch.nn.functional as F
 import torch
 from loss_function import *
 
-def get_model_parm_nums(model): 
-    total = sum([param.numel() for param in model.parameters()]) 
-    total = float(total) / 1000 
-    return total 
-
 parser = argparse.ArgumentParser()
-parser.add_argument('--ckpt', type=str, default='models/checkpoint_VGG16.pth')
+parser.add_argument('--ckpt', type=str, default='')
 parser.add_argument('--epoch', type=int, default=0, help='epoch to start training from')
 parser.add_argument('--n_epochs', type=int, default=1, help='number of epochs of training')
 parser.add_argument('--batch_size', type=int, default=1, help='size of the batches')
@@ -55,20 +50,13 @@ if cuda:
 if opt.ckpt is not None:
     state_dict = torch.load(opt.ckpt)
 
-    G_network_nonrecurrent1_state_dict1_old = state_dict["G_teacher"]
-    G_network_nonrecurrent1_state_dict1 = {k.replace("s2d", "c2f").replace("d2s", "f2c"): v for k, v in G_network_nonrecurrent1_state_dict1_old.items()}
+    G_network_nonrecurrent1_state_dict1 = state_dict["G_nonrecurrent1_teacher"]
     G_network_nonrecurrent1.load_state_dict(G_network_nonrecurrent1_state_dict1)
 
-    G_network_nonrecurrent2_state_dict2_old = state_dict["G_teacher_noshare"]
-    G_network_nonrecurrent2_state_dict2 = {k.replace("s2d", "c2f").replace("d2s", "f2c"): v for k, v in G_network_nonrecurrent2_state_dict2_old.items()}
+    G_network_nonrecurrent2_state_dict2 = state_dict["G_nonrecurrent2_teacher"]
     G_network_nonrecurrent2.load_state_dict(G_network_nonrecurrent2_state_dict2)
 
     print("loading checkpoints successfully")
-
-total_params = get_model_parm_nums(G_network_nonrecurrent1)
-print("*****************************")
-print("total_params:  ", total_params)
-print("*****************************")
 
 Tensor = torch.cuda.FloatTensor if cuda else torch.Tensor
 
@@ -79,7 +67,7 @@ transforms_ = [transforms.ToTensor(), normalize]
 #transforms_ = [transforms.ToTensor()]
 
 # Training data loader
-dataloader = DataLoader(ImageDataset("data", transforms_=transforms_, unaligned=True),
+dataloader = DataLoader(ImageDataset("/your/root/path", transforms_=transforms_, unaligned=True),
                         batch_size=1, shuffle=True, num_workers=1)
 # ----------
 #  Training

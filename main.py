@@ -1,5 +1,6 @@
 import argparse
-
+import random
+import time
 import tqdm
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader
@@ -10,7 +11,7 @@ from models_recurrent import *
 from models_nonrecurrent import Net_NonRecurrent
 from models_recurrent_bayesian import *
 from models_nonrecurrent_bayesian import Net_NonRecurrent_bayesian
-from tools import SingleSummaryWriter, mutils, saver
+from tools import mutils, saver
 from tools.metric_utils import AverageMeters, write_loss
 from utils import *
 
@@ -68,39 +69,17 @@ def main():
             # Update the parameters of Bayesian Networks
             state_t = G_network_recurrent_teacher.state_dict()
 
-            state_b1 = G_network_recurrent_bayesian1.state_dict()
+            state_b = G_network_recurrent_bayesian.state_dict()
             for k, v in state_t.items():
-                state_b1[k] = state_t[k]
-            G_network_recurrent_bayesian1.load_state_dict(state_b1)
-
-            state_b2 = G_network_recurrent_bayesian2.state_dict()
-            for k, v in state_t.items():
-                state_b2[k] = state_t[k]
-            G_network_recurrent_bayesian2.load_state_dict(state_b2)
-
-            state_b3 = G_network_recurrent_bayesian3.state_dict()
-            for k, v in state_t.items():
-                state_b3[k] = state_t[k]
-            G_network_recurrent_bayesian3.load_state_dict(state_b3)
-
+                state_b[k] = state_t[k]
+            G_network_recurrent_bayesian.load_state_dict(state_b)
             ##################################################################333
             state_t_nonrecurrent = G_network_nonrecurrent_teacher.state_dict()
 
-            state_b1_nonrecurrent = G_network_nonrecurrent_bayesian1.state_dict()
+            state_b_nonrecurrent = G_network_nonrecurrent_bayesian.state_dict()
             for k, v in state_t_nonrecurrent.items():
-                state_b1_nonrecurrent[k] = state_t_nonrecurrent[k]
-            G_network_nonrecurrent_bayesian1.load_state_dict(state_b1_nonrecurrent)
-
-            state_b2_nonrecurrent = G_network_nonrecurrent_bayesian2.state_dict()
-            for k, v in state_t_nonrecurrent.items():
-                state_b2_nonrecurrent[k] = state_t_nonrecurrent[k]
-            G_network_nonrecurrent_bayesian2.load_state_dict(state_b2_nonrecurrent)
-
-            state_b3_nonrecurrent = G_network_nonrecurrent_bayesian3.state_dict()
-            for k, v in state_t_nonrecurrent.items():
-                state_b3_nonrecurrent[k] = state_t_nonrecurrent[k]
-            G_network_nonrecurrent_bayesian3.load_state_dict(state_b3_nonrecurrent)
-      
+                state_b_nonrecurrent[k] = state_t_nonrecurrent[k]
+            G_network_nonrecurrent_bayesian.load_state_dict(state_b_nonrecurrent)
            
             print("Finish sampling parameters")
             # Computing weights of every parameter samplings 
@@ -115,20 +94,22 @@ def main():
             predictions_nonrecurrent3 = 0.0
             for i, val_batch in enumerate(bar_val):
                 val_img = val_batch['img'].float().to(device)
+                val_img2 = val_batch['img2'].float().to(device)
+                val_img3 = val_batch['img3'].float().to(device)
                 val_edge_gt = val_batch['edge'].float().to(device)
 
-                M_recurrent = W1_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian1(val_img)[-1]) + W2_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian2(val_img)[-1]) + W3_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian3(val_img)[-1])
-                M_nonrecurrent = W1_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian1(val_img)[-1]) + W2_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian2(val_img)[-1]) + W3_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian3(val_img)[-1])
+                M_recurrent = W1_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian(val_img)[-1]) + W2_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian(val_img2)[-1]) + W3_recurrent_previous * torch.sigmoid(G_network_recurrent_bayesian(val_img3)[-1])
+                M_nonrecurrent = W1_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian(val_img)[-1]) + W2_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian(val_img2)[-1]) + W3_nonrecurrent_previous * torch.sigmoid(G_network_nonrecurrent_bayesian(val_img3)[-1])
 
                 constants = constants + torch.mean(val_edge_gt)
 
-                variables1_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian1(val_img)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M_recurrent)))
-                variables2_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian2(val_img)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M_recurrent)))
-                variables3_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian3(val_img)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M_recurrent)))
+                variables1_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian(val_img)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M_recurrent)))
+                variables2_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian(val_img2)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M_recurrent)))
+                variables3_recurrent = torch.mean(torch.sigmoid(G_network_recurrent_bayesian(val_img3)[-1]) * torch.abs(val_edge_gt / M_recurrent  - (1 - val_edge_gt) / (1 - M_recurrent)))
 
-                variables1_nonrecurrent = torch.mean(torch.sigmoid(G_network_nonrecurrent_bayesian1(val_img)[-1]) * torch.abs(val_edge_gt / M_nonrecurrent  - (1 - val_edge_gt) / (1 - M_nonrecurrent)))
-                variables2_nonrecurrent = torch.mean(torch.sigmoid(G_network_nonrecurrent_bayesian2(val_img)[-1]) * torch.abs(val_edge_gt / M_nonrecurrent  - (1 - val_edge_gt) / (1 - M_nonrecurrent)))
-                variables3_nonrecurrent = torch.mean(torch.sigmoid(G_network_nonrecurrent_bayesian3(val_img)[-1]) * torch.abs(val_edge_gt / M_nonrecurrent  - (1 - val_edge_gt) / (1 - M_nonrecurrent)))
+                variables1_nonrecurrent = torch.mean(torch.sigmoid(G_network_nonrecurrent_bayesian(val_img)[-1]) * torch.abs(val_edge_gt / M_nonrecurrent  - (1 - val_edge_gt) / (1 - M_nonrecurrent)))
+                variables2_nonrecurrent = torch.mean(torch.sigmoid(G_network_nonrecurrent_bayesian(val_img2)[-1]) * torch.abs(val_edge_gt / M_nonrecurrent  - (1 - val_edge_gt) / (1 - M_nonrecurrent)))
+                variables3_nonrecurrent = torch.mean(torch.sigmoid(G_network_nonrecurrent_bayesian(val_img3)[-1]) * torch.abs(val_edge_gt / M_nonrecurrent  - (1 - val_edge_gt) / (1 - M_nonrecurrent)))
 
                 predictions_recurrent1 = predictions_recurrent1 + variables1_recurrent
                 predictions_recurrent2 = predictions_recurrent2 + variables2_recurrent
@@ -137,6 +118,7 @@ def main():
                 predictions_nonrecurrent1 = predictions_nonrecurrent1 + variables1_nonrecurrent
                 predictions_nonrecurrent2 = predictions_nonrecurrent2 + variables2_nonrecurrent
                 predictions_nonrecurrent3 = predictions_nonrecurrent3 + variables3_nonrecurrent
+                del val_img, val_img2, val_img3, val_edge_gt, M_recurrent, M_nonrecurrent
             
             constants = val_length * 0.5 / constants
             
@@ -165,6 +147,24 @@ def main():
             W2_nonrecurrent_previous = _W2_nonrecurrent
             W3_nonrecurrent_previous = _W3_nonrecurrent
 
+            if torch.isnan(_W1_nonrecurrent) or (torch.isnan(_W2_nonrecurrent) or torch.isnan(_W3_nonrecurrent)):
+                W1_nonrecurrent_previous = 0.33
+                W2_nonrecurrent_previous = 0.33
+                W3_nonrecurrent_previous = 0.33
+            else:
+                W1_nonrecurrent_previous = _W1_nonrecurrent
+                W2_nonrecurrent_previous = _W2_nonrecurrent
+                W3_nonrecurrent_previous = _W3_nonrecurrent
+
+            if torch.isnan(_W1_recurrent) or (torch.isnan(_W2_recurrent) or torch.isnan(_W3_recurrent)):
+                W1_recurrent_previous = 0.33
+                W2_recurrent_previous = 0.33
+                W3_recurrent_previous = 0.33
+            else:
+                W1_recurrent_previous = _W1_recurrent
+                W2_recurrent_previous = _W2_recurrent
+                W3_recurrent_previous = _W3_recurrent
+
             
             print("Finish calculating weights of every parameter samplings")
 
@@ -180,6 +180,8 @@ def main():
         for i, batch in enumerate(bar):
             # Set model input
             img = batch['img'].float().to(device)
+            img2 = batch['img2'].float().to(device)
+            img3 = batch['img3'].float().to(device)
             edge_gt = batch['edge'].float().to(device)
 
             if epoch >= 1:
@@ -188,8 +190,8 @@ def main():
 
                     #mask_features_recurrent_teacher    = G_network_teacher(img)[-1]
                     #mask_features_nonrecurrent    = G_network_nonrecurrent_teacher(img)[-1]
-                    mask_features_recurrent_teacher = W1_recurrent_previous * G_network_recurrent_bayesian1(img)[-1] + W2_recurrent_previous * G_network_recurrent_bayesian2(img)[-1] + W3_recurrent_previous * G_network_recurrent_bayesian3(img)[-1]
-                    mask_features_nonrecurrent_teacher = W1_nonrecurrent_previous * G_network_nonrecurrent_bayesian1(img)[-1] + W2_nonrecurrent_previous * G_network_nonrecurrent_bayesian2(img)[-1] + W3_nonrecurrent_previous * G_network_nonrecurrent_bayesian3(img)[-1]
+                    mask_features_recurrent_teacher = W1_recurrent_previous * G_network_recurrent_bayesian(img)[-1] + W2_recurrent_previous * G_network_recurrent_bayesian(img2)[-1] + W3_recurrent_previous * G_network_recurrent_bayesian(img3)[-1]
+                    mask_features_nonrecurrent_teacher = W1_nonrecurrent_previous * G_network_nonrecurrent_bayesian(img)[-1] + W2_nonrecurrent_previous * G_network_nonrecurrent_bayesian(img2)[-1] + W3_nonrecurrent_previous * G_network_nonrecurrent_bayesian(img3)[-1]
  
                     uncertainty_recurrent = torch.abs(F.sigmoid(mask_features_recurrent_teacher) - 0.5).detach()
                     uncertainty_nonrecurrent = torch.abs(F.sigmoid(mask_features_nonrecurrent_teacher) - 0.5).detach()
@@ -199,12 +201,16 @@ def main():
                     res = F.sigmoid(mask_features_recurrent_teacher * weight + mask_features_nonrecurrent_teacher * (1 - weight))
                     
                     edge_gt_soft = edge_gt * (1 - dis_weight) + res * dis_weight
+
+                    del uncertainty_recurrent, uncertainty_nonrecurrent, weight, res, mask_features_recurrent_teacher, mask_features_nonrecurrent_teacher
+                    torch.cuda.empty_cache()
             else:
                 edge_gt_soft = edge_gt
 
             if random.random() < dis_weight:
                 img_smoothed = bilateralFilter(img, 5)
                 img = img_smoothed if random.random() > 0.5 else img + 2 * (img - img_smoothed)
+                del img_smoothed
 
             edge_feats_recurrent = G_network_recurrent(img)
             edge_preds_recurrent = [torch.sigmoid(r) for r in edge_feats_recurrent]
@@ -212,12 +218,16 @@ def main():
             # Identity loss
             loss_recurrent, loss_recurrent_items = criterion(edge_preds_recurrent, edge_gt, edge_gt_soft)
 
-            if torch.isnan(loss):
+            if torch.isnan(loss_recurrent):
                 saver.save_image(img, './nan_im')
                 saver.save_image(edge_gt, './nan_edge_gt')
                 exit(0)
+
             loss_recurrent = loss_recurrent / args.iter_size
             loss_recurrent.backward()
+
+            del loss_recurrent, edge_feats_recurrent
+            torch.cuda.empty_cache()
 
             edge_feats_nonrecurrent = G_network_nonrecurrent(img)
             edge_preds_nonrecurrent = [torch.sigmoid(r) for r in edge_feats_nonrecurrent]
@@ -229,14 +239,26 @@ def main():
                 saver.save_image(img, './nan_im')
                 saver.save_image(edge_gt, './nan_edge_gt')
                 exit(0)
+
             loss_nonrecurrent = loss_nonrecurrent / args.iter_size
             loss_nonrecurrent.backward()
+
+            del loss_nonrecurrent, edge_feats_nonrecurrent
+            torch.cuda.empty_cache()
 
             if (i + 1) % args.iter_size == 0:
                 optimizer_G_recurrent.step()
                 optimizer_G_recurrent.zero_grad()
 
                 optimizer_G_nonrecurrent.step()
+                param_norm = 0
+                for param in G_network_nonrecurrent.parameters():
+                    if torch.norm(param, p=2).detach() > param_norm:
+                        param_norm = torch.norm(param, p=2).detach().clone().cpu()
+
+                if torch.is_tensor(param_norm):
+                    torch.nn.utils.clip_grad_norm_(G_network_nonrecurrent.parameters(), max_norm=int(param_norm.item())*5, norm_type=2)
+                del param_norm
                 optimizer_G_nonrecurrent.zero_grad()
 
             loss_recurrent_meter.update(loss_recurrent_items)
@@ -244,17 +266,19 @@ def main():
 
             if global_step % args.log_interval == 0:
                 print('\r[Epoch %d/%d, Iter: %d/%d]: %s, %s' % (epoch, args.n_epochs, i, len(bar), loss_recurrent_meter, loss_nonrecurrent_meter), end="")
-                write_loss(writer, 'train', loss_recurrent_meter, global_step)
+                #write_loss(writer, 'train', loss_recurrent_meter, global_step)
 
             if global_step % args.sample_interval == 0:
                 with torch.no_grad():
                     show = torch.cat([*edge_preds_nonrecurrent, edge_gt], dim=0).repeat(1, 3, 1, 1)
                     show = torch.cat([show, img], dim=0)
                     saver.save_image(show, '%09d' % global_step, nrow=5)
+                    del show
 
             global_step += 1
 
-            del loss_recurrent, loss_nonrecurrent, img, edge_preds_recurrent, edge_preds_nonrecurrent, edge_feats_recurrent, edge_feats_nonrecurrent
+            del img, img2, img3, edge_gt, edge_gt_soft, edge_preds_recurrent, edge_preds_nonrecurrent
+            torch.cuda.empty_cache()
 
         loss_recurrent_meter.reset()
         loss_nonrecurrent_meter.reset()
@@ -273,11 +297,14 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # setting random seed
-    seed = 5603114
+    seed = int(time.time())
     random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
     device = 'cuda'
 
@@ -291,13 +318,8 @@ if __name__ == '__main__':
     G_network_nonrecurrent_teacher = Net_NonRecurrent().to(device)
 
     #Initialize Bayesian networks
-    G_network_recurrent_bayesian1 = Net_Recurrent_bayesian().to(device)
-    G_network_recurrent_bayesian2 = Net_Recurrent_bayesian().to(device)
-    G_network_recurrent_bayesian3 = Net_Recurrent_bayesian().to(device)
-
-    G_network_nonrecurrent_bayesian1 = Net_NonRecurrent_bayesian().to(device)
-    G_network_nonrecurrent_bayesian2 = Net_NonRecurrent_bayesian().to(device)
-    G_network_nonrecurrent_bayesian3 = Net_NonRecurrent_bayesian().to(device)
+    G_network_recurrent_bayesian = Net_Recurrent_bayesian().to(device)
+    G_network_nonrecurrent_bayesian = Net_NonRecurrent_bayesian().to(device)
 
 
     # gradient stopping on momentum networks and Bayesian networks
@@ -306,20 +328,10 @@ if __name__ == '__main__':
     for p in G_network_nonrecurrent_teacher.parameters():
         p.requires_grad = False
 
-    for p in G_network_recurrent_bayesian1.parameters():
+    for p in G_network_recurrent_bayesian.parameters():
         p.requires_grad = False
-    for p in G_network_recurrent_bayesian2.parameters():
+    for p in G_network_nonrecurrent_bayesian.parameters():
         p.requires_grad = False
-    for p in G_network_recurrent_bayesian3.parameters():
-        p.requires_grad = False
-
-    for p in G_network_nonrecurrent_bayesian1.parameters():
-        p.requires_grad = False
-    for p in G_network_nonrecurrent_bayesian2.parameters():
-        p.requires_grad = False
-    for p in G_network_nonrecurrent_bayesian3.parameters():
-        p.requires_grad = False
-
 
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                          std=[0.229, 0.224, 0.225])
@@ -329,10 +341,10 @@ if __name__ == '__main__':
                    transforms.ToTensor(), normalize]
 
     # Training data loader
-    dataloader = DataLoader(ImageDataset("data", transforms_=transforms_, unaligned=True),
+    dataloader = DataLoader(ImageDataset("/your/root/path", transforms_=transforms_, unaligned=True),
                             batch_size=args.batch_size, shuffle=True, num_workers=args.n_cpu)
     # Testing data loader
-    val_dataloader = DataLoader(ImageDataset("data", transforms_=transforms_, unaligned=True, mode='val'),
+    val_dataloader = DataLoader(ImageDataset("/your/root/path", transforms_=transforms_, unaligned=True, mode='val'),
                                 batch_size=1, shuffle=False, num_workers=1)
 
     # Defining optimizer and schedulers
@@ -357,7 +369,7 @@ if __name__ == '__main__':
     os.makedirs(args.log_path, exist_ok=True)
     os.makedirs(args.saved_path, exist_ok=True)
 
-    writer = SingleSummaryWriter(args.log_path)
+    #writer = SingleSummaryWriter(args.log_path)
     global_step = 0
     W1_recurrent_previous = 0.33
     W2_recurrent_previous = 0.33
@@ -383,3 +395,4 @@ if __name__ == '__main__':
         scheduler_warmup_nonrecurrent.load_state_dict(state_dict['scheduler_warmup_nonrecurrent'])
 
     main()
+

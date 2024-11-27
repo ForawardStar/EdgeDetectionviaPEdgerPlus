@@ -1,14 +1,138 @@
+from torch import Tensor
+from torch.nn.parameter import Parameter
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
 import time
 import torchvision.models as models
 
+
+class _Base(nn.Module):
+    _version = 2
+    __constants__ = ["momentum", "eps", "num_features", "affine"]
+    num_features: int
+    eps: float
+    momentum: float
+    affine: bool
+
+    def __init__(
+            self,
+            num_features: int,
+            eps: float = 1e-5,
+            momentum: float = 0.1,
+            affine: bool = True,
+            device=None,
+            dtype=None
+    ) -> None:
+        factory_kwargs = {'device': device, 'dtype': dtype}
+        super(_Base, self).__init__()
+        self.num_features = num_features
+        self.eps = eps
+        self.momentum = momentum
+        self.affine = affine
+        if self.affine:
+            self.weight = Parameter(torch.empty(num_features, **factory_kwargs))
+            self.bias = Parameter(torch.empty(num_features, **factory_kwargs))
+        else:
+            self.register_parameter("weight", None)
+            self.register_parameter("bias", None)
+
+        self.reset_parameters()
+
+    def reset_parameters(self) -> None:
+        if self.affine:
+            nn.init.ones_(self.weight)
+            nn.init.zeros_(self.bias)
+
+    def _check_input_dim(self, input):
+        raise NotImplementedError
+
+    def extra_repr(self):
+        return (
+            "{num_features}, eps={eps}, momentum={momentum}, affine={affine}, "
+            "track_running_stats={track_running_stats}".format(**self.__dict__)
+        )
+
+    def _load_from_state_dict(
+            self,
+            state_dict,
+            prefix,
+            local_metadata,
+            strict,
+            missing_keys,
+            unexpected_keys,
+            error_msgs,
+    ):
+        version = local_metadata.get("version", None)
+
+        if (version is None or version < 2) and self.track_running_stats:
+            num_batches_tracked_key = prefix + "num_batches_tracked"
+            if num_batches_tracked_key not in state_dict:
+                state_dict[num_batches_tracked_key] = torch.tensor(0, dtype=torch.long)
+
+        super(_Base, self)._load_from_state_dict(
+            state_dict,
+            prefix,
+            local_metadata,
+            strict,
+            missing_keys,
+            unexpected_keys,
+            error_msgs,
+        )
+
+
+class Bayesian_Samp(_Base):
+    def __init__(
+            self,
+            num_features: int,
+            eps: float = 1e-5,
+            momentum: float = 0.9,
+            affine: bool = True,
+            device=None,
+            dtype=None
+    ) -> None:
+        factory_kwargs = {'device': device, 'dtype': dtype}
+        super(Bayesian_Samp, self).__init__(
+            num_features, eps, momentum, affine, **factory_kwargs
+        )
+
+    def bayesian_sampling(self, input, weight, bias):
+        reduced_dim = [i for i in range(input.dim()) if i not in [0, 1]]
+        normalized_shape = [1] * len(input.shape)
+        normalized_shape[1] = input.shape[1]
+
+        shape = [1] * len(input.shape)
+        shape[:2] = input.shape[:2]
+
+        mean = input.mean(dim=reduced_dim)
+        var = input.var(dim=reduced_dim, unbiased=False)
+        mean_update = mean.mean(0)
+        var_update = input.var(dim=reduced_dim, unbiased=True).mean(0)
+
+        x_hat = (input - mean.view(*shape)) / torch.sqrt(var.view(*shape) + eps)
+
+        x = x_hat * weight.view(*normalized_shape) + bias.view(*normalized_shape)
+        return x
+
+    def forward(self, input: Tensor) -> Tensor:
+        self._check_input_dim(input)
+
+        return self.bayesian_sampling(
+            input,
+            self.weight,
+            self.bias
+        )
+
+    def _check_input_dim(self, input):
+        if input.dim() != 4:
+            raise ValueError("expected 4D input (got {}D input)".format(input.dim()))
+
+
 class ConvBlock(nn.Sequential):
     def __init__(self, in_channel, out_channel, ker_size, padd, stride):
         super(ConvBlock, self).__init__()
         self.add_module('conv', nn.Conv2d(in_channel, out_channel, kernel_size=ker_size, stride=stride, padding=padd)),
-        #self.add_module('norm', nn.BatchNorm2d(out_channel,track_running_stats=False)),
+        self.add_module('norm', Bayesian_Samp(out_channel)),
         self.add_module('LeakyRelu', nn.LeakyReLU(0.2, inplace=True))
 
 
@@ -18,7 +142,7 @@ class ConvINReLU(nn.Sequential):
         super(ConvINReLU, self).__init__(
             nn.Conv2d(in_channel, out_channel, kernel_size, stride, padding, groups=groups, dilation=dilation,
                       bias=False),
-            #nn.BatchNorm2d(out_channel,track_running_stats=False),
+            Bayesian_Samp(out_channel),
             nn.LeakyReLU(inplace=True)
         )
 
@@ -37,7 +161,7 @@ class InvertedResidual(nn.Module):
             ConvINReLU(hidden_channel, hidden_channel, groups=hidden_channel, dilation=dilation),
             # 1x1 pointwise conv(linear)
             nn.Conv2d(hidden_channel, in_channel, kernel_size=1, bias=False),
-            #nn.BatchNorm2d(in_channel,track_running_stats=False),
+            Bayesian_Samp(in_channel),
         ])
 
         self.conv = nn.Sequential(*layers)
@@ -64,80 +188,80 @@ class Net_NonRecurrent_VGG16(nn.Module):
 
         self.tail_mask_c2f1 = nn.Sequential(
             nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(32,track_running_stats=False),
+            Bayesian_Samp(32),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(16,track_running_stats=False),
+            Bayesian_Samp(16),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
         self.tail_mask_f2c1 = nn.Sequential(
             nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(32,track_running_stats=False),
+            Bayesian_Samp(32),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(16,track_running_stats=False),
+            Bayesian_Samp(16),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
         self.tail_mask_c2f2 = nn.Sequential(
             nn.Conv2d(128, 32, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(32,track_running_stats=False),
+            Bayesian_Samp(32),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(16,track_running_stats=False),
+            Bayesian_Samp(16),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
         self.tail_mask_f2c2 = nn.Sequential(
             nn.Conv2d(128, 32, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(32,track_running_stats=False),
+            Bayesian_Samp(32),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(16,track_running_stats=False),
+            Bayesian_Samp(16),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
         self.tail_mask_c2f3 = nn.Sequential(
             nn.Conv2d(256, 32, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(32,track_running_stats=False),
+            Bayesian_Samp(32),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(16,track_running_stats=False),
+            Bayesian_Samp(16),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
         self.tail_mask_f2c3 = nn.Sequential(
             nn.Conv2d(256, 32, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(32,track_running_stats=False),
+            Bayesian_Samp(32),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(16,track_running_stats=False),
+            Bayesian_Samp(16),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
         self.tail_mask_c2f4 = nn.Sequential(
             nn.Conv2d(512, 32, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(32,track_running_stats=False),
+            Bayesian_Samp(32),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(16,track_running_stats=False),
+            Bayesian_Samp(16),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )
 
         self.tail_mask_f2c4 = nn.Sequential(
             nn.Conv2d(512, 32, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(32,track_running_stats=False),
+            Bayesian_Samp(32),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(32, 16, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(16,track_running_stats=False),
+            Bayesian_Samp(16),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(16, 1, kernel_size=3, stride=1, padding=1)
         )

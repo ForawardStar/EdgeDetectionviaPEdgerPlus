@@ -15,9 +15,9 @@ class ImageDataset(Dataset):
         self.root = root
         # self.files_img = sorted(os.listdir(root + '/images/'))
         if mode == 'train':
-            self.filepath = os.path.join(self.root, 'bsds_pascal_train_pair_trainset.lst')
+            self.filepath = os.path.join(self.root, 'bsds_pascal_train_split_pair_aug.lst')
         elif mode == 'val':
-            self.filepath = os.path.join(self.root, 'bsds_pascal_train_pair_valset.lst')
+            self.filepath = os.path.join(self.root, 'bsds_pascal_val_split_pair_aug.lst')
 
         with open(self.filepath, 'r') as f:
             self.filelist = f.readlines()
@@ -29,13 +29,15 @@ class ImageDataset(Dataset):
         # filename = self.files_img[index % len(self.files_img)]
         img_path = self.root + '/' + img_file
         item_img = self.transform(Image.open(img_path).convert("RGB"))
+        item_img2 = self.transform(Image.open(img_path).convert("RGB"))
+        item_img3 = self.transform(Image.open(img_path).convert("RGB"))
 
         edge_path = self.root + '/' + lb_file
         item_edge = self.to_tensor(Image.open(edge_path))
         item_edge[item_edge >= 0.2] = 1
         item_edge[item_edge < 0.2] = 0
 
-        return {'img': item_img, 'edge': item_edge[0:1, :, :]}
+        return {'img': item_img, 'img2': item_img2, 'img3': item_img3, 'edge': item_edge[0:1, :, :]}
 
     def __len__(self):
         return len(self.filelist)
