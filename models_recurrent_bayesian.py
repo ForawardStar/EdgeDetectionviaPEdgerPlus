@@ -95,7 +95,7 @@ class Bayesian_Samp(_Base):
             num_features, eps, momentum, affine, **factory_kwargs
         )
 
-    def bayesian_sampling(self, input, weight, bias):
+    def bayesian_sampling(self, input, weight, bias, eps=1e-5):
         reduced_dim = [i for i in range(input.dim()) if i not in [0, 1]]
         normalized_shape = [1] * len(input.shape)
         normalized_shape[1] = input.shape[1]
