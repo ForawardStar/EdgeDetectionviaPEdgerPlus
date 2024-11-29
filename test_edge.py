@@ -56,6 +56,11 @@ if opt.ckpt is not None:
     G_network_nonrecurrent_state_dict = state_dict["G_nonrecurrent_teacher"]
     G_network_nonrecurrent.load_state_dict(G_network_nonrecurrent_state_dict)
 
+total_params = get_model_parm_nums(G_network_nonrecurrent)
+print("*****************************")
+print("total_params: {} K".format(total_params))
+print("*****************************")
+
 Tensor = torch.cuda.FloatTensor if cuda else torch.Tensor
 
 # Image transformations

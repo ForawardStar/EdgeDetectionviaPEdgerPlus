@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.optim.lr_scheduler import _LRScheduler
-
+import torch.nn as nn
 
 def fetch_state_dict(dic):
     state_dict = {}
@@ -165,6 +165,14 @@ class ReplayBuffer():
                     to_return.append(element)
         return Variable(torch.cat(to_return))
 
+def get_model_parm_nums(model):
+    total_params = 0
+    for name, module in model.named_modules():
+        if isinstance(module, (nn.Conv1d, nn.Conv2d, nn.Conv3d)) or isinstance(module, nn.Linear):
+            params = sum(p.numel() for p in module.parameters())
+            total_params += params
+
+    return float(total_params) / 1000
 
 class LambdaLR():
     def __init__(self, n_epochs, offset, decay_start_epoch):
