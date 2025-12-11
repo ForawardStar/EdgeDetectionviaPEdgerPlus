@@ -212,7 +212,7 @@ def main():
             # Identity loss
             loss_recurrent, loss_recurrent_items = criterion(edge_preds_recurrent, edge_gt, edge_gt_soft)
 
-            if torch.isnan(loss):
+            if torch.isnan(loss_recurrent):
                 saver.save_image(img, './nan_im')
                 saver.save_image(edge_gt, './nan_edge_gt')
                 exit(0)
@@ -383,3 +383,4 @@ if __name__ == '__main__':
         scheduler_warmup_nonrecurrent.load_state_dict(state_dict['scheduler_warmup_nonrecurrent'])
 
     main()
+
