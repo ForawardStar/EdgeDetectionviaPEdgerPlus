@@ -40,7 +40,7 @@ If you want to test our pre-trained model, put the test images into the 'data/te
 
 ```python test_edge.py```
 
-Our pre-trained models of PEdger++ without any pre-training, have already been stored in the "models/" folder, i.e., models/checkpoint.pth, and the relative path to the 'models/checkpoint.pth' is specified in the "test_edge.py" file. Simply running 'test_edge.py' can take the images in "data/test/" folder as inputs, and output the detected edges.
+Our pre-trained models of PEdger++ on BSDS data alone without Pascal VOC, have already been stored in the "models/" folder, i.e., models/checkpoint.pth, and the relative path to the 'models/checkpoint.pth' is specified in the "test_edge.py" file. Simply running 'test_edge.py' can take the images in "data/test/" folder as inputs, and output the detected edges.
 
 If you want to evaluate the performance of PEdger++ w/ VGG16 and PEdger++ w/ ResNet50, please run:
 
